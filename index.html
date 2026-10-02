@@ -3,35 +3,52 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>闖關隨機抽題機器人</title>
+  <title>從前從前...賞金獵人闖關抽題機</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
   <style>
+    body {
+      font-family: 'Zen Maru Gothic', cursive, sans-serif;
+    }
     .perspective { perspective: 1000px; }
     .transform-style-3d { transform-style: preserve-3d; }
     .backface-hidden { backface-visibility: hidden; }
     .rotate-y-180 { transform: rotateY(180deg); }
+    
+    .magic-bg {
+      background: linear-gradient(135deg, #2b2663 0%, #4a3b80 50%, #6b4c9a 100%);
+    }
+    .card-magic-shadow {
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 215, 0, 0.2);
+    }
+    .float-anim {
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
   </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100 flex flex-col">
+<body class="magic-bg min-h-screen text-slate-100 flex flex-col justify-between selection:bg-amber-300 selection:text-slate-900">
 
   <!-- Header -->
-  <header class="bg-white dark:bg-slate-800 shadow-md p-4 flex justify-between items-center max-w-4xl w-full mx-auto rounded-b-2xl">
-    <div class="flex items-center space-x-3">
-      <div class="bg-indigo-600 text-white p-2 rounded-lg">
-        <i class="fa-solid font-bold text-xl">🏆</i>
+  <header class="bg-indigo-950/80 backdrop-blur-md border-b border-purple-400/30 p-4 max-w-4xl w-full mx-auto rounded-b-3xl shadow-lg">
+    <div class="flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <span class="text-3xl float-anim">🧹</span>
+        <div>
+          <h1 class="text-xl md:text-2xl font-black text-amber-300 tracking-wider">從前從前均一天... ✨</h1>
+          <p class="text-xs text-purple-200">賞金獵人闖關冒險抽題機 📖</p>
+        </div>
       </div>
-      <h1 class="text-xl font-bold">10分鐘闖關抽題機器人</h1>
-    </div>
-    <div class="flex items-center space-x-2">
-      <button id="toggleDarkMode" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700">
-        <i class="fa-solid fa-moon dark:hidden text-lg"></i>
-        <i class="fa-solid fa-sun hidden dark:inline text-lg text-amber-400"></i>
-      </button>
-      <button id="openManageBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition">
-        <i class="fa-solid fa-list-check mr-1"></i> 管理題庫
-      </button>
+      <div class="flex items-center space-x-2">
+        <button id="openManageBtn" class="bg-amber-400 hover:bg-amber-300 text-purple-950 font-bold px-3 py-1.5 rounded-2xl text-sm shadow-md transition transform hover:scale-105 flex items-center gap-1">
+          <i class="fa-solid fa-book-bookmark"></i> 題庫寶箱
+        </button>
+      </div>
     </div>
   </header>
 
@@ -39,104 +56,108 @@
   <main class="flex-1 max-w-4xl w-full mx-auto p-4 flex flex-col justify-center items-center">
     
     <!-- Game Control Bar -->
-    <div class="w-full bg-white dark:bg-slate-800 p-4 rounded-xl shadow mb-4 flex flex-wrap gap-4 items-center justify-between">
+    <div class="w-full bg-indigo-900/70 backdrop-blur-md border-2 border-purple-300/40 p-4 rounded-3xl shadow-xl mb-4 flex flex-wrap gap-4 items-center justify-between">
       <!-- Timer -->
-      <div class="flex items-center gap-2">
-        <i class="fa-solid fa-stopwatch text-indigo-600 text-xl"></i>
-        <span class="text-sm font-medium">剩餘時間：</span>
-        <span id="timerText" class="font-mono text-xl font-bold text-indigo-600 dark:text-indigo-400">10:00</span>
+      <div class="flex items-center gap-2 bg-indigo-950/60 px-4 py-2 rounded-2xl border border-purple-400/30">
+        <span class="text-xl">⏳</span>
+        <span class="text-xs md:text-sm font-bold text-purple-200">倒數時間：</span>
+        <span id="timerText" class="font-mono text-2xl font-black text-amber-300">10:00</span>
       </div>
 
       <!-- Target Counter -->
-      <div class="flex items-center gap-4 text-sm">
-        <div>答對目標: <span id="correctTargetText" class="font-bold text-emerald-600">0 / 8 題</span></div>
-        <div>PASS 次數: <span id="passCountText" class="font-bold text-amber-500">2 / 2</span></div>
+      <div class="flex items-center gap-4 text-xs md:text-sm font-bold">
+        <div class="bg-indigo-950/60 px-3 py-1.5 rounded-xl border border-purple-400/20">
+          🏆 集齊碎片: <span id="correctTargetText" class="text-amber-300 font-extrabold text-base">0 / 8 題</span>
+        </div>
+        <div class="bg-indigo-950/60 px-3 py-1.5 rounded-xl border border-purple-400/20">
+          ⏭️ PASS 次數: <span id="passCountText" class="text-amber-400 font-extrabold text-base">2 / 2</span>
+        </div>
       </div>
 
       <!-- Start/End Game Button -->
       <div>
-        <button id="startGameBtn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2 rounded-lg shadow transition text-sm">
-          ▶ 開始遊戲
+        <button id="startGameBtn" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-5 py-2.5 rounded-2xl shadow-lg transition transform hover:scale-105 text-sm flex items-center gap-1">
+          🚀 開始冒險
         </button>
-        <button id="endGameBtn" class="hidden bg-rose-600 hover:bg-rose-700 text-white font-bold px-4 py-2 rounded-lg shadow transition text-sm">
+        <button id="endGameBtn" class="hidden bg-rose-500 hover:bg-rose-400 text-white font-black px-5 py-2.5 rounded-2xl shadow-lg transition transform hover:scale-105 text-sm flex items-center gap-1">
           ⏹ 結束結算
         </button>
       </div>
     </div>
 
     <!-- Flashcard Area -->
-    <div class="w-full max-w-lg perspective h-80 mb-6 cursor-pointer" id="cardContainer">
-      <div id="cardInner" class="w-full h-full transform-style-3d transition-transform duration-500 relative shadow-xl rounded-2xl">
+    <div class="w-full max-w-2xl perspective h-96 mb-6 cursor-pointer" id="cardContainer">
+      <div id="cardInner" class="w-full h-full transform-style-3d transition-transform duration-500 relative rounded-3xl card-magic-shadow">
         
         <!-- Front -->
-        <div class="absolute inset-0 backface-hidden bg-white dark:bg-slate-800 border-2 border-indigo-100 dark:border-slate-700 rounded-2xl p-6 flex flex-col justify-between items-center text-center">
-          <div class="w-full flex justify-between items-center text-xs text-slate-400">
-            <span id="cardCategory" class="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 px-2.5 py-1 rounded-full font-medium">分類</span>
-            <span>點擊卡片顯示解答</span>
+        <div class="absolute inset-0 backface-hidden bg-slate-900/90 border-4 border-amber-300/80 rounded-3xl p-6 flex flex-col justify-between items-center text-center">
+          <div class="w-full flex justify-between items-center text-xs text-purple-300">
+            <span id="cardCategory" class="bg-purple-800/80 text-amber-200 border border-purple-400 px-3 py-1 rounded-full text-sm font-bold">✨ 分類</span>
+            <span class="flex items-center gap-1"><i class="fa-solid fa-hand-pointer"></i> 點擊卡片看解答 📖</span>
           </div>
           <div class="my-auto px-2">
-            <h2 id="cardQuestion" class="text-3xl md:text-4xl font-bold leading-relaxed">請點擊「開始遊戲」挑戰！</h2>
+            <h2 id="cardQuestion" class="text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-amber-200 tracking-wider">點擊「開始冒險」開啟關卡！</h2>
           </div>
-          <div class="text-xs text-slate-400 flex items-center gap-1">
-            <i class="fa-solid fa-rotate-right"></i> 翻轉卡片
+          <div class="text-xs text-purple-300/80 flex items-center gap-1 font-bold">
+            🐧 企鵝賞金獵人準備中 🪙
           </div>
         </div>
 
         <!-- Back -->
-        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-indigo-50 dark:bg-slate-800 border-2 border-indigo-200 dark:border-indigo-900 rounded-2xl p-6 flex flex-col justify-between items-center text-center">
-          <div class="w-full text-right text-xs text-indigo-500 font-medium">解答說明</div>
-          <div class="my-auto px-2 overflow-y-auto max-h-48">
-            <p id="cardAnswer" class="text-2xl text-slate-700 dark:text-slate-200 leading-relaxed font-bold">解答會顯示在這裡。</p>
+        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-purple-950/95 border-4 border-purple-400 rounded-3xl p-6 flex flex-col justify-between items-center text-center">
+          <div class="w-full text-right text-xs text-amber-300 font-bold">📜 解答封印解除</div>
+          <div class="my-auto px-2 overflow-y-auto max-h-56">
+            <p id="cardAnswer" class="text-3xl md:text-4xl text-amber-100 leading-relaxed font-bold">解答會顯示在這裡。</p>
           </div>
-          <div class="text-xs text-slate-400">點擊卡片返回題目</div>
+          <div class="text-xs text-purple-300">點擊卡片返回題目</div>
         </div>
 
       </div>
     </div>
 
     <!-- Action Buttons (During Game) -->
-    <div id="gameActionButtons" class="flex gap-3 flex-wrap justify-center w-full max-w-lg mb-6">
-      <button id="correctBtn" disabled class="disabled:opacity-50 flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-        <i class="fa-solid fa-circle-check"></i> 答對
+    <div id="gameActionButtons" class="flex gap-4 flex-wrap justify-center w-full max-w-2xl mb-6">
+      <button id="correctBtn" disabled class="disabled:opacity-40 flex-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black py-3.5 px-4 rounded-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 text-lg">
+        ⭕ 答對啦！
       </button>
-      <button id="wrongBtn" disabled class="disabled:opacity-50 flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-        <i class="fa-solid fa-circle-xmark"></i> 錯誤
+      <button id="wrongBtn" disabled class="disabled:opacity-40 flex-1 bg-rose-500 hover:bg-rose-400 text-white font-black py-3.5 px-4 rounded-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 text-lg">
+        ❌ 答錯了
       </button>
-      <button id="passBtn" disabled class="disabled:opacity-50 bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-5 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
-        <i class="fa-solid fa-forward"></i> PASS (<span id="passBtnNum">2</span>)
+      <button id="passBtn" disabled class="disabled:opacity-40 bg-amber-400 hover:bg-amber-300 text-purple-950 font-black py-3.5 px-6 rounded-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 text-lg">
+        ⏭️ PASS (<span id="passBtnNum">2</span>)
       </button>
     </div>
 
     <!-- Live Game Stats / Summary Area -->
-    <div class="w-full max-w-lg bg-white dark:bg-slate-800 p-4 rounded-2xl shadow space-y-4">
-      <h3 class="font-bold border-b pb-2 flex justify-between items-center">
-        <span>📋 本局答題紀錄</span>
-        <span class="text-xs font-normal text-slate-400">答對 8 題即過關</span>
+    <div class="w-full max-w-2xl bg-indigo-950/70 backdrop-blur-md border border-purple-400/30 p-5 rounded-3xl shadow-xl space-y-4">
+      <h3 class="font-bold border-b border-purple-400/30 pb-2 flex justify-between items-center text-amber-300">
+        <span>📜 冒險戰報</span>
+        <span class="text-xs font-normal text-purple-200">集齊 8 塊故事碎片過關 ✨</span>
       </h3>
       
       <div class="grid grid-cols-2 gap-4 text-center">
-        <div class="bg-emerald-50 dark:bg-emerald-950/30 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800">
-          <div class="text-xs text-emerald-600 dark:text-emerald-400 font-medium">答對數量</div>
-          <div id="correctCount" class="text-2xl font-bold text-emerald-600 dark:text-emerald-400">0</div>
+        <div class="bg-emerald-950/40 p-3 rounded-2xl border border-emerald-500/30">
+          <div class="text-xs text-emerald-300 font-bold">⭕ 獲得故事碎片</div>
+          <div id="correctCount" class="text-3xl font-black text-emerald-400">0</div>
         </div>
-        <div class="bg-rose-50 dark:bg-rose-950/30 p-3 rounded-xl border border-rose-200 dark:border-rose-800">
-          <div class="text-xs text-rose-600 dark:text-rose-400 font-medium">錯誤數量</div>
-          <div id="wrongCount" class="text-2xl font-bold text-rose-600 dark:text-rose-400">0</div>
+        <div class="bg-rose-950/40 p-3 rounded-2xl border border-rose-500/30">
+          <div class="text-xs text-rose-300 font-bold">❌ 挑戰失敗</div>
+          <div id="wrongCount" class="text-3xl font-black text-rose-400">0</div>
         </div>
       </div>
 
       <!-- Question Content Lists -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
         <div>
-          <div class="text-xs font-bold text-emerald-600 mb-1">⭕ 答對題目：</div>
-          <ul id="correctList" class="space-y-1 max-h-36 overflow-y-auto bg-slate-50 dark:bg-slate-700/50 p-2 rounded-lg text-xs">
-            <li class="text-slate-400 italic">尚無紀錄</li>
+          <div class="text-xs font-bold text-emerald-300 mb-1">✨ 已答對題目：</div>
+          <ul id="correctList" class="space-y-1 max-h-32 overflow-y-auto bg-slate-900/60 p-2 rounded-xl text-xs border border-purple-400/20">
+            <li class="text-purple-300/60 italic">尚未獲得碎片</li>
           </ul>
         </div>
         <div>
-          <div class="text-xs font-bold text-rose-600 mb-1">❌ 答錯題目：</div>
-          <ul id="wrongList" class="space-y-1 max-h-36 overflow-y-auto bg-slate-50 dark:bg-slate-700/50 p-2 rounded-lg text-xs">
-            <li class="text-slate-400 italic">尚無紀錄</li>
+          <div class="text-xs font-bold text-rose-300 mb-1">💥 已答錯題目：</div>
+          <ul id="wrongList" class="space-y-1 max-h-32 overflow-y-auto bg-slate-900/60 p-2 rounded-xl text-xs border border-purple-400/20">
+            <li class="text-purple-300/60 italic">無答錯紀錄</li>
           </ul>
         </div>
       </div>
@@ -144,75 +165,144 @@
 
   </main>
 
+  <!-- Victory Modal (8 題成功過關彈窗) -->
+  <div id="victoryModal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden flex justify-center items-center p-4 z-50">
+    <div class="bg-indigo-950 border-4 border-amber-300 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl relative float-anim">
+      <div class="text-6xl mb-2">🧙‍♀️ 🐧 🏴‍☠️</div>
+      <h2 class="text-2xl font-black text-amber-300 mb-4 leading-relaxed">
+        恭喜各位賞金獵人闖關成功 ✨ 🎊<br>
+        <span class="text-xl text-purple-200">請拿取故事碎片！📖</span>
+      </h2>
+      <p id="victoryDetail" class="text-sm text-purple-300 mb-6 bg-purple-900/50 p-3 rounded-xl border border-purple-400/30"></p>
+      <button id="closeVictoryBtn" class="bg-amber-400 hover:bg-amber-300 text-purple-950 font-black px-6 py-2.5 rounded-2xl shadow-lg transition transform hover:scale-105">
+        太棒了！收下碎片 🪙
+      </button>
+    </div>
+  </div>
+
   <!-- Manage Modal -->
-  <div id="manageModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex justify-center items-center p-4 z-50">
-    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] flex flex-col shadow-2xl">
-      <div class="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-slate-700 pb-3">
-        <h3 class="text-lg font-bold">題庫管理</h3>
-        <button id="closeManageBtn" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+  <div id="manageModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex justify-center items-center p-4 z-50">
+    <div class="bg-indigo-950 border-2 border-purple-400 rounded-3xl max-w-2xl w-full p-6 max-h-[90vh] flex flex-col shadow-2xl">
+      <div class="flex justify-between items-center mb-4 border-b border-purple-400/30 pb-3">
+        <h3 class="text-lg font-bold text-amber-300">📖 題庫管理寶箱</h3>
+        <button id="closeManageBtn" class="text-purple-300 hover:text-white text-2xl">&times;</button>
       </div>
 
-      <form id="addQuestionForm" class="space-y-3 mb-4 bg-slate-50 dark:bg-slate-700/50 p-4 rounded-xl">
+      <form id="addQuestionForm" class="space-y-3 mb-4 bg-indigo-900/60 p-4 rounded-2xl border border-purple-400/30">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <input type="text" id="newCategory" placeholder="分類 (例: 常識)" class="sm:col-span-1 bg-white dark:bg-slate-800 border rounded-lg px-3 py-1.5 text-sm" required>
-          <input type="text" id="newQuestion" placeholder="請輸入題目內容" class="sm:col-span-2 bg-white dark:bg-slate-800 border rounded-lg px-3 py-1.5 text-sm" required>
+          <input type="text" id="newCategory" placeholder="分類 (例: 冒險)" class="sm:col-span-1 bg-slate-900/80 border border-purple-400/40 rounded-xl px-3 py-1.5 text-sm text-amber-200" required>
+          <input type="text" id="newQuestion" placeholder="請輸入題目內容" class="sm:col-span-2 bg-slate-900/80 border border-purple-400/40 rounded-xl px-3 py-1.5 text-sm text-amber-200" required>
         </div>
-        <textarea id="newAnswer" placeholder="請輸入解答或說明" class="w-full bg-white dark:bg-slate-800 border rounded-lg px-3 py-1.5 text-sm h-16" required></textarea>
-        <button type="submit" class="w-full bg-indigo-600 text-white rounded-lg py-1.5 text-sm font-medium hover:bg-indigo-700 transition">
-          新增題目
+        <textarea id="newAnswer" placeholder="請輸入解答或說明" class="w-full bg-slate-900/80 border border-purple-400/40 rounded-xl px-3 py-1.5 text-sm text-amber-200 h-16" required></textarea>
+        <button type="submit" class="w-full bg-amber-400 hover:bg-amber-300 text-purple-950 font-black rounded-xl py-2 text-sm transition">
+          ➕ 新增題目至寶箱
         </button>
       </form>
 
       <div class="flex-1 overflow-y-auto space-y-2 pr-1" id="questionsList"></div>
 
-      <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center text-xs">
-        <button id="resetDefaultBtn" class="text-indigo-600 hover:underline">恢復 35 道預設題目</button>
+      <div class="mt-4 pt-3 border-t border-purple-400/30 flex justify-between items-center text-xs">
+        <button id="resetDefaultBtn" class="text-amber-300 hover:underline">🔄 恢復 35 道預設題目</button>
       </div>
     </div>
   </div>
 
   <script>
+    // Web Audio Sound Synthesizer
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+
+      if (type === 'correct') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.setValueAtTime(659.25, now + 0.1);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+        osc.start(now);
+        osc.stop(now + 0.4);
+      } else if (type === 'wrong') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.setValueAtTime(140, now + 0.15);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.start(now);
+        osc.stop(now + 0.35);
+      } else if (type === 'pass') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.2);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.start(now);
+        osc.stop(now + 0.25);
+      } else if (type === 'victory') {
+        const notes = [523.25, 659.25, 783.99, 1046.50];
+        notes.forEach((freq, idx) => {
+          const oscV = audioCtx.createOscillator();
+          const gainV = audioCtx.createGain();
+          oscV.connect(gainV);
+          gainV.connect(audioCtx.destination);
+          oscV.frequency.setValueAtTime(freq, now + idx * 0.12);
+          gainV.gain.setValueAtTime(0.25, now + idx * 0.12);
+          gainV.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.12 + 0.3);
+          oscV.start(now + idx * 0.12);
+          oscV.stop(now + idx * 0.12 + 0.3);
+        });
+      }
+    }
+
     // 預設 35 題
     const defaultQuestions = [
-      { id: '1', category: '日常動作', question: '刷牙', answer: '題目：刷牙' },
-      { id: '2', category: '日常動作', question: '洗頭', answer: '題目：洗頭' },
-      { id: '3', category: '日常動作', question: '穿襪子', answer: '題目：穿襪子' },
-      { id: '4', category: '日常動作', question: '綁鞋帶', answer: '題目：綁鞋帶' },
-      { id: '5', category: '日常動作', question: '撐雨傘', answer: '題目：撐雨傘' },
-      { id: '6', category: '日常動作', question: '搭公車', answer: '題目：搭公車' },
-      { id: '7', category: '日常動作', question: '打電話', answer: '題目：打電話' },
-      { id: '8', category: '日常動作', question: '拍照', answer: '題目：拍照' },
-      { id: '9', category: '日常動作', question: '吃拉麵', answer: '題目：吃拉麵' },
-      { id: '10', category: '日常動作', question: '拖地', answer: '題目：拖地' },
-      { id: '11', category: '日常動作', question: '晾衣服', answer: '題目：晾衣服' },
-      { id: '12', category: '數字/其他', question: '67', answer: '題目：67' },
-      { id: '13', category: '運動/健身', question: '打籃球', answer: '題目：打籃球' },
-      { id: '14', category: '運動/健身', question: '打羽球', answer: '題目：打羽球' },
-      { id: '15', category: '運動/健身', question: '打排球', answer: '題目：打排球' },
-      { id: '16', category: '動物', question: '貓咪', answer: '題目：貓咪' },
-      { id: '17', category: '動物', question: '暴龍', answer: '題目：暴龍' },
-      { id: '18', category: '運動/健身', question: '深蹲', answer: '題目：深蹲' },
-      { id: '19', category: '日常動作', question: '自言自語', answer: '題目：自言自語' },
-      { id: '20', category: '音樂/藝術', question: '搖滾樂', answer: '題目：搖滾樂' },
-      { id: '21', category: '運動/健身', question: '普拉提斯', answer: '題目：普拉提斯' },
-      { id: '22', category: '物品/家電', question: '洗衣機', answer: '題目：洗衣機' },
-      { id: '23', category: '角色/動漫', question: '柯南', answer: '題目：柯南' },
-      { id: '24', category: '情境/動作', question: '求婚', answer: '題目：求婚' },
-      { id: '25', category: '遊樂/休閒', question: '盪鞦韆', answer: '題目：盪鞦韆' },
-      { id: '26', category: '日常動作', question: '開車', answer: '題目：開車' },
-      { id: '27', category: '角色/動漫', question: '馬力歐', answer: '題目：馬力歐' },
-      { id: '28', category: '音樂/樂器', question: '小提琴', answer: '題目：小提琴' },
-      { id: '29', category: '音樂/樂器', question: '彈鋼琴', answer: '題目：彈鋼琴' },
-      { id: '30', category: '遊樂/休閒', question: '海盜船', answer: '題目：海盜船' },
-      { id: '31', category: '運動/健身', question: '游泳', answer: '題目：游泳' },
-      { id: '32', category: '動物', question: '老虎', answer: '題目：老虎' },
-      { id: '33', category: '成語/詞語', question: '七上八下', answer: '題目：七上八下' },
-      { id: '34', category: '成語/詞語', question: '雞飛狗跳', answer: '題目：雞飛狗跳' },
-      { id: '35', category: '日常動作', question: '剝香蕉', answer: '題目：剝香蕉' }
+      { id: '1', category: '日常動作', question: '刷牙', answer: '解答：刷牙' },
+      { id: '2', category: '日常動作', question: '洗頭', answer: '解答：洗頭' },
+      { id: '3', category: '日常動作', question: '穿襪子', answer: '解答：穿襪子' },
+      { id: '4', category: '日常動作', question: '綁鞋帶', answer: '解答：綁鞋帶' },
+      { id: '5', category: '日常動作', question: '撐雨傘', answer: '解答：撐雨傘' },
+      { id: '6', category: '日常動作', question: '搭公車', answer: '解答：搭公車' },
+      { id: '7', category: '日常動作', question: '打電話', answer: '解答：打電話' },
+      { id: '8', category: '日常動作', question: '拍照', answer: '解答：拍照' },
+      { id: '9', category: '日常動作', question: '吃拉麵', answer: '解答：吃拉麵' },
+      { id: '10', category: '日常動作', question: '拖地', answer: '解答：拖地' },
+      { id: '11', category: '日常動作', question: '晾衣服', answer: '解答：晾衣服' },
+      { id: '12', category: '數字/其他', question: '67', answer: '解答：67' },
+      { id: '13', category: '運動/健身', question: '打籃球', answer: '解答：打籃球' },
+      { id: '14', category: '運動/健身', question: '打羽球', answer: '解答：打羽球' },
+      { id: '15', category: '運動/健身', question: '打排球', answer: '解答：打排球' },
+      { id: '16', category: '動物', question: '貓咪', answer: '解答：貓咪' },
+      { id: '17', category: '動物', question: '暴龍', answer: '解答：暴龍' },
+      { id: '18', category: '運動/健身', question: '深蹲', answer: '解答：深蹲' },
+      { id: '19', category: '日常動作', question: '自言自語', answer: '解答：自言自語' },
+      { id: '20', category: '音樂/藝術', question: '搖滾樂', answer: '解答：搖滾樂' },
+      { id: '21', category: '運動/健身', question: '普拉提斯', answer: '解答：普拉提斯' },
+      { id: '22', category: '物品/家電', question: '洗衣機', answer: '解答：洗衣機' },
+      { id: '23', category: '角色/動漫', question: '柯南', answer: '解答：柯南' },
+      { id: '24', category: '情境/動作', question: '求婚', answer: '解答：求婚' },
+      { id: '25', category: '遊樂/休閒', question: '盪鞦韆', answer: '解答：盪鞦韆' },
+      { id: '26', category: '日常動作', question: '開車', answer: '解答：開車' },
+      { id: '27', category: '角色/動漫', question: '馬力歐', answer: '解答：馬力歐' },
+      { id: '28', category: '音樂/樂器', question: '小提琴', answer: '解答：小提琴' },
+      { id: '29', category: '音樂/樂器', question: '彈鋼琴', answer: '解答：彈鋼琴' },
+      { id: '30', category: '遊樂/休閒', question: '海盜船', answer: '解答：海盜船' },
+      { id: '31', category: '運動/健身', question: '游泳', answer: '解答：游泳' },
+      { id: '32', category: '動物', question: '老虎', answer: '解答：老虎' },
+      { id: '33', category: '成語/詞語', question: '七上八下', answer: '解答：七上八下' },
+      { id: '34', category: '成語/詞語', question: '雞飛狗跳', answer: '解答：雞飛狗跳' },
+      { id: '35', category: '日常動作', question: '剝香蕉', answer: '解答：剝香蕉' }
     ];
 
     // State
-    let questions = JSON.parse(localStorage.getItem('quiz_questions_v3')) || defaultQuestions;
+    let questions = JSON.parse(localStorage.getItem('quiz_questions_v5')) || defaultQuestions;
     let availablePool = [];
     let currentQuestion = null;
     let isFlipped = false;
@@ -220,7 +310,7 @@
     // Game State
     let isGameActive = false;
     let timerInterval = null;
-    let timeLeft = 600; // 10 minutes in seconds
+    let timeLeft = 600;
     let passLeft = 2;
     let correctQuestions = [];
     let wrongQuestions = [];
@@ -248,6 +338,11 @@
     const correctList = document.getElementById('correctList');
     const wrongList = document.getElementById('wrongList');
 
+    // Victory Modal
+    const victoryModal = document.getElementById('victoryModal');
+    const victoryDetail = document.getElementById('victoryDetail');
+    const closeVictoryBtn = document.getElementById('closeVictoryBtn');
+
     // Manage Modal
     const manageModal = document.getElementById('manageModal');
     const openManageBtn = document.getElementById('openManageBtn');
@@ -257,25 +352,21 @@
 
     function init() {
       renderQuestionsList();
-      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.documentElement.classList.add('dark');
-      }
     }
 
     function saveQuestions() {
-      localStorage.setItem('quiz_questions_v3', JSON.stringify(questions));
+      localStorage.setItem('quiz_questions_v5', JSON.stringify(questions));
     }
 
-    // Timer Function
     function startTimer() {
-      timeLeft = 600; // 10 mins
+      timeLeft = 600;
       updateTimerDisplay();
       timerInterval = setInterval(() => {
         timeLeft--;
         updateTimerDisplay();
         if (timeLeft <= 0) {
           clearInterval(timerInterval);
-          alert('⏰ 10 分鐘時間到！遊戲結束。');
+          alert('⏰ 10 分鐘冒險時間到！');
           endGame();
         }
       }, 1000);
@@ -287,10 +378,9 @@
       timerText.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
-    // Start Game
     function startGame() {
       if (questions.length === 0) {
-        alert('請先建立題庫！');
+        alert('寶箱裡沒有題目！請先新增。');
         return;
       }
 
@@ -300,7 +390,6 @@
       wrongQuestions = [];
       passLeft = 2;
 
-      // Update UI
       startGameBtn.classList.add('hidden');
       endGameBtn.classList.remove('hidden');
 
@@ -313,7 +402,6 @@
       drawNextQuestion();
     }
 
-    // End Game
     function endGame() {
       isGameActive = false;
       clearInterval(timerInterval);
@@ -328,19 +416,20 @@
       if (isFlipped) flipCard(false);
 
       if (correctQuestions.length >= 8) {
-        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-        alert(`🎉 恭喜成功過關！共答對 ${correctQuestions.length} 題！`);
+        playSound('victory');
+        confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+        victoryDetail.textContent = `賞金獵人隊伍在剩餘時間 ${timerText.textContent} 內，成功集齊了 ${correctQuestions.length} 塊故事碎片！`;
+        victoryModal.classList.remove('hidden');
       } else {
-        alert(`遊戲結束！總共答對 ${correctQuestions.length} 題，答錯 ${wrongQuestions.length} 題。`);
+        alert(`冒險結束！本次共集齊 ${correctQuestions.length} 塊碎片，答錯 ${wrongQuestions.length} 題。`);
       }
     }
 
-    // Draw Next
     function drawNextQuestion() {
       if (isFlipped) flipCard(false);
 
       if (availablePool.length === 0) {
-        alert('所有題目已抽完！遊戲結束。');
+        alert('題目已全數抽取完畢！');
         endGame();
         return;
       }
@@ -349,12 +438,11 @@
       currentQuestion = availablePool[randomIndex];
       availablePool.splice(randomIndex, 1);
 
-      cardCategory.textContent = currentQuestion.category;
+      cardCategory.textContent = `✨ ${currentQuestion.category}`;
       cardQuestion.textContent = currentQuestion.question;
       cardAnswer.textContent = currentQuestion.answer;
     }
 
-    // Flip Card
     function flipCard(state) {
       isFlipped = state !== undefined ? state : !isFlipped;
       if (isFlipped) {
@@ -364,7 +452,6 @@
       }
     }
 
-    // Update Stats
     function updateStatsUI() {
       correctCount.textContent = correctQuestions.length;
       wrongCount.textContent = wrongQuestions.length;
@@ -376,24 +463,23 @@
         passBtn.disabled = true;
       }
 
-      // Render Correct List
       if (correctQuestions.length === 0) {
-        correctList.innerHTML = '<li class="text-slate-400 italic">尚無紀錄</li>';
+        correctList.innerHTML = '<li class="text-purple-300/60 italic">尚未獲得碎片</li>';
       } else {
-        correctList.innerHTML = correctQuestions.map(q => `<li class="text-emerald-700 dark:text-emerald-300 font-medium">✓ ${q.question}</li>`).join('');
+        correctList.innerHTML = correctQuestions.map(q => `<li class="text-amber-300 font-medium">✨ ${q.question}</li>`).join('');
       }
 
-      // Render Wrong List
       if (wrongQuestions.length === 0) {
-        wrongList.innerHTML = '<li class="text-slate-400 italic">尚無紀錄</li>';
+        wrongList.innerHTML = '<li class="text-purple-300/60 italic">無答錯紀錄</li>';
       } else {
-        wrongList.innerHTML = wrongQuestions.map(q => `<li class="text-rose-700 dark:text-rose-300 font-medium">✗ ${q.question}</li>`).join('');
+        wrongList.innerHTML = wrongQuestions.map(q => `<li class="text-rose-300 font-medium">💥 ${q.question}</li>`).join('');
       }
     }
 
     // Handlers
     correctBtn.addEventListener('click', () => {
       if (!isGameActive || !currentQuestion) return;
+      playSound('correct');
       correctQuestions.push(currentQuestion);
       updateStatsUI();
 
@@ -406,6 +492,7 @@
 
     wrongBtn.addEventListener('click', () => {
       if (!isGameActive || !currentQuestion) return;
+      playSound('wrong');
       wrongQuestions.push(currentQuestion);
       updateStatsUI();
       drawNextQuestion();
@@ -413,6 +500,7 @@
 
     passBtn.addEventListener('click', () => {
       if (!isGameActive || passLeft <= 0) return;
+      playSound('pass');
       passLeft--;
       updateStatsUI();
       drawNextQuestion();
@@ -423,22 +511,19 @@
 
     cardContainer.addEventListener('click', () => flipCard());
 
-    document.getElementById('toggleDarkMode').addEventListener('click', () => {
-      document.documentElement.classList.toggle('dark');
-    });
+    closeVictoryBtn.addEventListener('click', () => victoryModal.classList.add('hidden'));
 
-    // Modal Control
     openManageBtn.addEventListener('click', () => manageModal.classList.remove('hidden'));
     closeManageBtn.addEventListener('click', () => manageModal.classList.add('hidden'));
 
     function renderQuestionsList() {
       questionsList.innerHTML = questions.map((q) => `
-        <div class="flex items-center justify-between p-2.5 bg-slate-100 dark:bg-slate-700/60 rounded-lg text-sm">
+        <div class="flex items-center justify-between p-2.5 bg-indigo-900/40 rounded-xl border border-purple-400/20 text-sm">
           <div class="overflow-hidden pr-2">
-            <span class="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 px-2 py-0.5 rounded mr-2">${q.category}</span>
-            <span class="font-medium truncate inline-block max-w-[200px] sm:max-w-[320px] align-bottom">${q.question}</span>
+            <span class="text-xs bg-purple-800 text-amber-200 px-2 py-0.5 rounded-md mr-2 font-bold">${q.category}</span>
+            <span class="font-medium truncate inline-block max-w-[200px] sm:max-w-[320px] align-bottom text-slate-200">${q.question}</span>
           </div>
-          <button onclick="deleteQuestion('${q.id}')" class="text-red-500 hover:text-red-700 p-1">
+          <button onclick="deleteQuestion('${q.id}')" class="text-rose-400 hover:text-rose-300 p-1">
             <i class="fa-solid fa-trash"></i>
           </button>
         </div>
