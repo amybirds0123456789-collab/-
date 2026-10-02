@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>隨機抽題機器人</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .perspective { perspective: 1000px; }
+    .transform-style-3d { transform-style: preserve-3d; }
+    .backface-hidden { backface-visibility: hidden; }
+    .rotate-y-180 { transform: rotateY(180deg); }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 transition-colors duration-300 dark:bg-slate-900 dark:text-slate-100 flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white dark:bg-slate-800 shadow-md p-4 flex justify-between items-center max-w-4xl w-full mx-auto rounded-b-2xl">
+    <div class="flex items-center space-x-3">
+      <div class="bg-indigo-600 text-white p-2 rounded-lg">
+        <i class="fa-solid font-bold text-xl">🎯</i>
+      </div>
+      <h1 class="text-xl font-bold">隨機抽題機器人</h1>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button id="toggleDarkMode" class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700">
+        <i class="fa-solid fa-moon dark:hidden text-lg"></i>
+        <i class="fa-solid fa-sun hidden dark:inline text-lg text-amber-400"></i>
+      </button>
+      <button id="openManageBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm font-medium transition">
+        <i class="fa-solid fa-list-check mr-1"></i> 管理題庫
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-4xl w-full mx-auto p-4 flex flex-col justify-center items-center">
+    
+    <!-- Controls Bar -->
+    <div class="w-full bg-white dark:bg-slate-800 p-4 rounded-xl shadow mb-6 flex flex-wrap gap-4 items-center justify-between">
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium">分類：</label>
+        <select id="categorySelect" class="bg-slate-100 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          <option value="ALL">全部分類</option>
+        </select>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <label class="flex items-center gap-2 text-sm cursor-pointer">
+          <input type="checkbox" id="noRepeatCheck" checked class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
+          <span>不重複抽題</span>
+        </label>
+        
+        <div class="text-xs text-slate-500 dark:text-slate-400">
+          進度: <span id="progressText" class="font-bold text-indigo-600 dark:text-indigo-400">0/0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="w-full bg-slate-200 dark:bg-slate-700 h-2 rounded-full mb-6 overflow-hidden">
+      <div id="progressBar" class="bg-indigo-600 h-full w-0 transition-all duration-300"></div>
+    </div>
+
+    <!-- Flashcard Area -->
+    <div class="w-full max-w-lg perspective h-80 mb-6 cursor-pointer" id="cardContainer">
+      <div id="cardInner" class="w-full h-full transform-style-3d transition-transform duration-500 relative shadow-xl rounded-2xl">
+        
+        <!-- Front -->
+        <div class="absolute inset-0 backface-hidden bg-white dark:bg-slate-800 border-2 border-indigo-100 dark:border-slate-700 rounded-2xl p-6 flex flex-col justify-between items-center text-center">
+          <div class="w-full flex justify-between items-center text-xs text-slate-400">
+            <span id="cardCategory" class="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-300 px-2.5 py-1 rounded-full font-medium">分類</span>
+            <span>點擊卡片顯示解答</span>
+          </div>
+          <div class="my-auto px-2">
+            <h2 id="cardQuestion" class="text-xl md:text-2xl font-bold leading-relaxed">請點擊下方按鈕開始抽題！</h2>
+          </div>
+          <div class="text-xs text-slate-400 flex items-center gap-1">
+            <i class="fa-solid fa-rotate-right"></i> 翻轉卡片
+          </div>
+        </div>
+
+        <!-- Back -->
+        <div class="absolute inset-0 backface-hidden rotate-y-180 bg-indigo-50 dark:bg-slate-800 border-2 border-indigo-200 dark:border-indigo-900 rounded-2xl p-6 flex flex-col justify-between items-center text-center">
+          <div class="w-full text-right text-xs text-indigo-500 font-medium">解答說明</div>
+          <div class="my-auto px-2 overflow-y-auto max-h-48">
+            <p id="cardAnswer" class="text-lg text-slate-700 dark:text-slate-200 leading-relaxed font-medium">解答會顯示在這裡。</p>
+          </div>
+          <div class="text-xs text-slate-400">點擊卡片返回題目</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex gap-4">
+      <button id="drawBtn" class="bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white font-bold px-8 py-3 rounded-xl shadow-lg transition flex items-center gap-2 text-lg">
+        <i class="fa-solid fa-dice"></i> 抽下一題
+      </button>
+      <button id="resetPoolBtn" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-4 py-3 rounded-xl transition text-sm">
+        重置題庫
+      </button>
+    </div>
+
+  </main>
+
+  <!-- Manage Modal -->
+  <div id="manageModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden flex justify-center items-center p-4 z-50">
+    <div class="bg-white dark:bg-slate-800 rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] flex flex-col shadow-2xl">
+      <div class="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-slate-700 pb-3">
+        <h3 class="text-lg font-bold">題庫管理</h3>
+        <button id="closeManageBtn" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+      </div>
+
+      <!-- Add Form -->
+      <form id="addQuestionForm" class="space-y-3 mb-4 bg-slate-50 dark:bg-slate-700/50 p-4 rounded-xl">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <input type="text" id="newCategory" placeholder="分類 (例: 常識)" class="sm:col-span-1 bg-white dark:bg-slate-800 border rounded-lg px-3 py-1.5 text-sm" required>
+          <input type="text" id="newQuestion" placeholder="請輸入題目內容" class="sm:col-span-2 bg-white dark:bg-slate-800 border rounded-lg px-3 py-1.5 text-sm" required>
+        </div>
+        <textarea id="newAnswer" placeholder="請輸入解答或說明" class="w-full bg-white dark:bg-slate-800 border rounded-lg px-3 py-1.5 text-sm h-16" required></textarea>
+        <button type="submit" class="w-full bg-indigo-600 text-white rounded-lg py-1.5 text-sm font-medium hover:bg-indigo-700 transition">
+          新增題目
+        </button>
+      </form>
+
+      <!-- Questions List -->
+      <div class="flex-1 overflow-y-auto space-y-2 pr-1" id="questionsList"></div>
+
+      <!-- Footer Actions -->
+      <div class="mt-4 pt-3 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center text-xs">
+        <div class="flex gap-2">
+          <button id="exportBtn" class="bg-slate-200 dark:bg-slate-700 px-3 py-1.5 rounded hover:bg-slate-300">匯出 JSON</button>
+          <label class="bg-slate-200 dark:bg-slate-700 px-3 py-1.5 rounded cursor-pointer hover:bg-slate-300">
+            匯入 JSON
+            <input type="file" id="importInput" accept=".json" class="hidden">
+          </label>
+        </div>
+        <button id="resetDefaultBtn" class="text-red-500 hover:underline">恢復預設題庫</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Default Questions
+    const defaultQuestions = [
+      { id: '1', category: '程式開發', question: '什麼是物件導向程式設計（OOP）的四大特性？', answer: '封裝 (Encapsulation)、繼承 (Inheritance)、多型 (Polymorphism)、抽象 (Abstraction)。' },
+      { id: '2', category: '網路常識', question: 'HTTP 與 HTTPS 的主要差別是什麼？', answer: 'HTTPS 比 HTTP 多了 SSL/TLS 加密層，可以保障傳輸資料的安全與完整性，預設 Port 也不同（HTTP 為 80，HTTPS 為 443）。' },
+      { id: '3', category: '資料庫', question: 'SQL 中的 WHERE 與 HAVING 有何不同？', answer: 'WHERE 是在資料「分組前」進行篩選，不能使用聚合函數；HAVING 是在 GROUP BY「分組後」對結果進行篩選。' },
+      { id: '4', category: '趣味常識', question: '世界上最長的河流是哪一條？', answer: '尼羅河（Nile），長度約 6,650 公里（也有部分研究認為亞馬遜河更長）。' }
+    ];
+
+    // State
+    let questions = JSON.parse(localStorage.getItem('quiz_questions')) || defaultQuestions;
+    let availablePool = [];
+    let currentQuestion = null;
+    let isFlipped = false;
+
+    // Elements
+    const cardInner = document.getElementById('cardInner');
+    const cardContainer = document.getElementById('cardContainer');
+    const cardCategory = document.getElementById('cardCategory');
+    const cardQuestion = document.getElementById('cardQuestion');
+    const cardAnswer = document.getElementById('cardAnswer');
+    const categorySelect = document.getElementById('categorySelect');
+    const noRepeatCheck = document.getElementById('noRepeatCheck');
+    const drawBtn = document.getElementById('drawBtn');
+    const resetPoolBtn = document.getElementById('resetPoolBtn');
+    const progressText = document.getElementById('progressText');
+    const progressBar = document.getElementById('progressBar');
+    
+    // Modal Elements
+    const manageModal = document.getElementById('manageModal');
+    const openManageBtn = document.getElementById('openManageBtn');
+    const closeManageBtn = document.getElementById('closeManageBtn');
+    const addQuestionForm = document.getElementById('addQuestionForm');
+    const questionsList = document.getElementById('questionsList');
+
+    // Init
+    function init() {
+      updateCategoryDropdown();
+      resetPool();
+      renderQuestionsList();
+      
+      // Check Dark Mode
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+      }
+    }
+
+    // Save to LocalStorage
+    function saveQuestions() {
+      localStorage.setItem('quiz_questions', JSON.stringify(questions));
+      updateCategoryDropdown();
+      resetPool();
+    }
+
+    // Update Categories
+    function updateCategoryDropdown() {
+      const currentCat = categorySelect.value;
+      const categories = ['ALL', ...new Set(questions.map(q => q.category))];
+      categorySelect.innerHTML = categories.map(cat => 
+        `<option value="${cat}">${cat === 'ALL' ? '全部分類' : cat}</option>`
+      ).join('');
+      categorySelect.value = categories.includes(currentCat) ? currentCat : 'ALL';
+    }
+
+    // Reset Draw Pool
+    function resetPool() {
+      const selectedCat = categorySelect.value;
+      availablePool = questions.filter(q => selectedCat === 'ALL' || q.category === selectedCat);
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const selectedCat = categorySelect.value;
+      const totalInCat = questions.filter(q => selectedCat === 'ALL' || q.category === selectedCat).length;
+      const remaining = availablePool.length;
+      const drawn = totalInCat - remaining;
+      
+      progressText.textContent = `${drawn}/${totalInCat}`;
+      const percentage = totalInCat === 0 ? 0 : (drawn / totalInCat) * 100;
+      progressBar.style.width = `${percentage}%`;
+    }
+
+    // Draw Function
+    function drawQuestion() {
+      if (isFlipped) flipCard(false);
+
+      if (availablePool.length === 0) {
+        if (noRepeatCheck.checked) {
+          alert('🎉 該分類的題目已全部抽完！將自動重置牌堆。');
+          resetPool();
+        } else {
+          resetPool();
+        }
+      }
+
+      if (availablePool.length === 0) {
+        cardQuestion.textContent = '目前沒有可抽的題目，請先新增題目！';
+        cardAnswer.textContent = '無解答';
+        cardCategory.textContent = '提示';
+        return;
+      }
+
+      const randomIndex = Math.floor(Math.random() * availablePool.length);
+      currentQuestion = availablePool[randomIndex];
+
+      if (noRepeatCheck.checked) {
+        availablePool.splice(randomIndex, 1);
+      }
+
+      // Display
+      cardCategory.textContent = currentQuestion.category;
+      cardQuestion.textContent = currentQuestion.question;
+      cardAnswer.textContent = currentQuestion.answer;
+
+      updateProgress();
+    }
+
+    // Flip Card
+    function flipCard(state) {
+      isFlipped = state !== undefined ? state : !isFlipped;
+      if (isFlipped) {
+        cardInner.classList.add('rotate-y-180');
+      } else {
+        cardInner.classList.remove('rotate-y-180');
+      }
+    }
+
+    // Render Question List in Modal
+    function renderQuestionsList() {
+      questionsList.innerHTML = questions.map((q, index) => `
+        <div class="flex items-center justify-between p-2.5 bg-slate-100 dark:bg-slate-700/60 rounded-lg text-sm">
+          <div class="overflow-hidden pr-2">
+            <span class="text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300 px-2 py-0.5 rounded mr-2">${q.category}</span>
+            <span class="font-medium truncate inline-block max-w-[200px] sm:max-w-[320px] align-bottom">${q.question}</span>
+          </div>
+          <button onclick="deleteQuestion('${q.id}')" class="text-red-500 hover:text-red-700 p-1">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    window.deleteQuestion = function(id) {
+      questions = questions.filter(q => q.id !== id);
+      saveQuestions();
+      renderQuestionsList();
+    };
+
+    // Event Listeners
+    cardContainer.addEventListener('click', () => flipCard());
+    drawBtn.addEventListener('click', drawQuestion);
+    resetPoolBtn.addEventListener('click', () => {
+      resetPool();
+      alert('牌堆已重置！');
+    });
+    categorySelect.addEventListener('change', resetPool);
+
+    // Dark Mode Toggle
+    document.getElementById('toggleDarkMode').addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+    });
+
+    // Modal Control
+    openManageBtn.addEventListener('click', () => manageModal.classList.remove('hidden'));
+    closeManageBtn.addEventListener('click', () => manageModal.classList.add('hidden'));
+
+    // Add Form Submit
+    addQuestionForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newQ = {
+        id: Date.now().toString(),
+        category: document.getElementById('newCategory').value.trim(),
+        question: document.getElementById('newQuestion').value.trim(),
+        answer: document.getElementById('newAnswer').value.trim()
+      };
+      questions.unshift(newQ);
+      saveQuestions();
+      renderQuestionsList();
+      addQuestionForm.reset();
+    });
+
+    // Reset Default
+    document.getElementById('resetDefaultBtn').addEventListener('click', () => {
+      if (confirm('確定要恢復為預設題庫嗎？這將覆蓋現有題目。')) {
+        questions = [...defaultQuestions];
+        saveQuestions();
+        renderQuestionsList();
+      }
+    });
+
+    // Export / Import
+    document.getElementById('exportBtn').addEventListener('click', () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(questions, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", "quiz_questions.json");
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    });
+
+    document.getElementById('importInput').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const imported = JSON.parse(event.target.result);
+          if (Array.isArray(imported)) {
+            questions = imported;
+            saveQuestions();
+            renderQuestionsList();
+            alert('題庫匯入成功！');
+          }
+        } catch (err) {
+          alert('格式錯誤，請確保上傳正確的 JSON 檔案。');
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    // Start
+    init();
+  </script>
+</body>
+</html>
