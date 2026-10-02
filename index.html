@@ -3,33 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>從前從前...賞金獵人闖關抽題機</title>
+  <title>從前從前幼一天...賞金獵人闖關抽題機</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: 'Zen Maru Gothic', cursive, sans-serif;
-    }
+    body { font-family: 'Zen Maru Gothic', cursive, sans-serif; }
     .perspective { perspective: 1000px; }
     .transform-style-3d { transform-style: preserve-3d; }
     .backface-hidden { backface-visibility: hidden; }
     .rotate-y-180 { transform: rotateY(180deg); }
-    
-    .magic-bg {
-      background: linear-gradient(135deg, #2b2663 0%, #4a3b80 50%, #6b4c9a 100%);
-    }
-    .card-magic-shadow {
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 215, 0, 0.2);
-    }
-    .float-anim {
-      animation: float 3s ease-in-out infinite;
-    }
-    @keyframes float {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-8px); }
-    }
+    .magic-bg { background: linear-gradient(135deg, #2b2663 0%, #4a3b80 50%, #6b4c9a 100%); }
+    .card-magic-shadow { box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 215, 0, 0.2); }
+    .float-anim { animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
   </style>
 </head>
 <body class="magic-bg min-h-screen text-slate-100 flex flex-col justify-between selection:bg-amber-300 selection:text-slate-900">
@@ -40,12 +28,15 @@
       <div class="flex items-center space-x-3">
         <span class="text-3xl float-anim">🧹</span>
         <div>
-          <h1 class="text-xl md:text-2xl font-black text-amber-300 tracking-wider">從前從前均一天... ✨</h1>
+          <h1 class="text-xl md:text-2xl font-black text-amber-300 tracking-wider">從前從前幼一天... ✨</h1>
           <p class="text-xs text-purple-200">賞金獵人闖關冒險抽題機 📖</p>
         </div>
       </div>
       <div class="flex items-center space-x-2">
-        <button id="openManageBtn" class="bg-amber-400 hover:bg-amber-300 text-purple-950 font-bold px-3 py-1.5 rounded-2xl text-sm shadow-md transition transform hover:scale-105 flex items-center gap-1">
+        <button id="openLeaderboardBtn" class="bg-purple-600 hover:bg-purple-500 text-amber-200 font-bold px-3 py-1.5 rounded-2xl text-xs md:text-sm shadow-md transition transform hover:scale-105 flex items-center gap-1 border border-purple-300/30">
+          🏆 積分榜
+        </button>
+        <button id="openManageBtn" class="bg-amber-400 hover:bg-amber-300 text-purple-950 font-bold px-3 py-1.5 rounded-2xl text-xs md:text-sm shadow-md transition transform hover:scale-105 flex items-center gap-1">
           <i class="fa-solid fa-book-bookmark"></i> 題庫寶箱
         </button>
       </div>
@@ -55,6 +46,12 @@
   <!-- Main Container -->
   <main class="flex-1 max-w-4xl w-full mx-auto p-4 flex flex-col justify-center items-center">
     
+    <!-- Current Team Badge -->
+    <div id="teamDisplayBadge" class="hidden mb-3 bg-purple-900/80 border border-amber-300/50 px-4 py-1.5 rounded-full text-amber-300 font-bold text-sm shadow-lg flex items-center gap-2">
+      <span>🚩 挑戰隊伍：</span>
+      <span id="currentTeamName" class="text-white text-base font-black">--</span>
+    </div>
+
     <!-- Game Control Bar -->
     <div class="w-full bg-indigo-900/70 backdrop-blur-md border-2 border-purple-300/40 p-4 rounded-3xl shadow-xl mb-4 flex flex-wrap gap-4 items-center justify-between">
       <!-- Timer -->
@@ -132,12 +129,12 @@
     <div class="w-full max-w-2xl bg-indigo-950/70 backdrop-blur-md border border-purple-400/30 p-5 rounded-3xl shadow-xl space-y-4">
       <h3 class="font-bold border-b border-purple-400/30 pb-2 flex justify-between items-center text-amber-300">
         <span>📜 冒險戰報</span>
-        <span class="text-xs font-normal text-purple-200">集齊 8 塊故事碎片過關 ✨</span>
+        <span id="stageBadgeText" class="text-xs font-normal text-purple-200">集齊 8 塊故事碎片過關 ✨</span>
       </h3>
       
       <div class="grid grid-cols-2 gap-4 text-center">
         <div class="bg-emerald-950/40 p-3 rounded-2xl border border-emerald-500/30">
-          <div class="text-xs text-emerald-300 font-bold">⭕ 獲得故事碎片</div>
+          <div class="text-xs text-emerald-300 font-bold">⭕ 獲得故事碎片 / 答對</div>
           <div id="correctCount" class="text-3xl font-black text-emerald-400">0</div>
         </div>
         <div class="bg-rose-950/40 p-3 rounded-2xl border border-rose-500/30">
@@ -165,22 +162,76 @@
 
   </main>
 
-  <!-- Victory Modal (8 題成功過關彈窗) -->
-  <div id="victoryModal" class="fixed inset-0 bg-black/70 backdrop-blur-md hidden flex justify-center items-center p-4 z-50">
-    <div class="bg-indigo-950 border-4 border-amber-300 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl relative float-anim">
-      <div class="text-6xl mb-2">🧙‍♀️ 🐧 🏴‍☠️</div>
-      <h2 class="text-2xl font-black text-amber-300 mb-4 leading-relaxed">
-        恭喜各位賞金獵人闖關成功 ✨ 🎊<br>
-        <span class="text-xl text-purple-200">請拿取故事碎片！📖</span>
+  <!-- Team Name Input Modal (隊伍名稱輸入彈窗) -->
+  <div id="teamNameModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex justify-center items-center p-4 z-50">
+    <div class="bg-indigo-950 border-4 border-amber-300 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl relative">
+      <div class="text-5xl mb-3">🚩 🏴‍☠️</div>
+      <h2 class="text-2xl font-black text-amber-300 mb-2">請輸入您的隊伍名稱</h2>
+      <p class="text-xs text-purple-200 mb-4">準備好踏上從前從前的冒險旅程了嗎？</p>
+      <input type="text" id="teamNameInput" placeholder="例如：超強冒險家隊" class="w-full bg-slate-900 border-2 border-purple-400 rounded-2xl px-4 py-3 text-center text-lg text-amber-200 font-bold mb-6 focus:outline-none focus:border-amber-300">
+      <div class="flex gap-3">
+        <button id="cancelStartBtn" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-2xl transition">取消</button>
+        <button id="confirmStartBtn" class="flex-1 bg-amber-400 hover:bg-amber-300 text-purple-950 font-black py-3 rounded-2xl transition shadow-lg">出發冒險！🚀</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Advanced Stage Modal (進入進階題魔女彈窗) -->
+  <div id="advancedModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex justify-center items-center p-4 z-50">
+    <div class="bg-indigo-950 border-4 border-purple-400 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl relative float-anim">
+      <!-- 魔女圖示與頭像 -->
+      <div class="relative w-24 h-24 mx-auto mb-3">
+        <div class="w-24 h-24 rounded-full bg-purple-800 border-2 border-amber-300 flex items-center justify-center text-5xl shadow-inner">
+          🧙‍♀️
+        </div>
+        <span class="absolute -bottom-1 -right-1 text-2xl">✨</span>
+      </div>
+      <h3 class="text-amber-300 font-bold text-sm tracking-widest mb-1">【 魔女試煉開啟 】</h3>
+      <h2 class="text-xl md:text-2xl font-black text-amber-200 mb-4 leading-relaxed">
+        「你們真的太聰明啦！所以魔女還想要考考你們更難的題目～😍」
       </h2>
-      <p id="victoryDetail" class="text-sm text-purple-300 mb-6 bg-purple-900/50 p-3 rounded-xl border border-purple-400/30"></p>
-      <button id="closeVictoryBtn" class="bg-amber-400 hover:bg-amber-300 text-purple-950 font-black px-6 py-2.5 rounded-2xl shadow-lg transition transform hover:scale-105">
-        太棒了！收下碎片 🪙
+      <div class="bg-purple-900/60 p-3 rounded-2xl border border-purple-400/30 text-xs text-purple-200 mb-5 space-y-1">
+        <p>✨ 恭喜完成前 8 題故事碎片收集！</p>
+        <p>⏱️ 時間將繼續倒數，獲得額外 <strong>1 次 PASS 機會</strong>！</p>
+      </div>
+      <button id="startAdvancedBtn" class="bg-purple-500 hover:bg-purple-400 text-white font-black px-6 py-3 rounded-2xl shadow-lg transition transform hover:scale-105">
+        接受魔女挑戰！🔮
       </button>
     </div>
   </div>
 
-  <!-- Manage Modal -->
+  <!-- Game Over / Victory Modal (遊戲結束結算彈窗) -->
+  <div id="victoryModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex justify-center items-center p-4 z-50">
+    <div class="bg-indigo-950 border-4 border-amber-300 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl relative">
+      <div class="text-6xl mb-2">🧙‍♀️ 🐧 🏆</div>
+      <h2 id="victoryTitle" class="text-2xl font-black text-amber-300 mb-3 leading-relaxed">
+        冒險結算通知 ✨
+      </h2>
+      <p id="victoryDetail" class="text-sm text-purple-200 mb-5 bg-purple-900/50 p-4 rounded-2xl border border-purple-400/30 leading-relaxed"></p>
+      <button id="closeVictoryBtn" class="bg-amber-400 hover:bg-amber-300 text-purple-950 font-black px-6 py-2.5 rounded-2xl shadow-lg transition transform hover:scale-105">
+        查看積分榜 🏆
+      </button>
+    </div>
+  </div>
+
+  <!-- Leaderboard Modal (積分榜彈窗) -->
+  <div id="leaderboardModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex justify-center items-center p-4 z-50">
+    <div class="bg-indigo-950 border-2 border-amber-300 rounded-3xl max-w-xl w-full p-6 max-h-[85vh] flex flex-col shadow-2xl">
+      <div class="flex justify-between items-center mb-4 border-b border-purple-400/30 pb-3">
+        <h3 class="text-lg font-bold text-amber-300 flex items-center gap-2">
+          🏆 冒險者英雄榜 (積分榜)
+        </h3>
+        <button id="closeLeaderboardBtn" class="text-purple-300 hover:text-white text-2xl">&times;</button>
+      </div>
+      <p class="text-xs text-purple-200 mb-3">排序規則：成功集齊 8 題者優先，耗時越短排名越高（時間相同則並列）</p>
+      <div class="flex-1 overflow-y-auto space-y-2 pr-1" id="leaderboardList"></div>
+      <div class="mt-4 pt-3 border-t border-purple-400/30 text-right">
+        <button id="clearLeaderboardBtn" class="text-xs text-rose-400 hover:underline">🗑️ 清除積分紀錄</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Manage Modal (題庫管理) -->
   <div id="manageModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex justify-center items-center p-4 z-50">
     <div class="bg-indigo-950 border-2 border-purple-400 rounded-3xl max-w-2xl w-full p-6 max-h-[90vh] flex flex-col shadow-2xl">
       <div class="flex justify-between items-center mb-4 border-b border-purple-400/30 pb-3">
@@ -219,7 +270,6 @@
       const gain = audioCtx.createGain();
       osc.connect(gain);
       gain.connect(audioCtx.destination);
-
       const now = audioCtx.currentTime;
 
       if (type === 'correct') {
@@ -262,7 +312,7 @@
       }
     }
 
-    // 預設 35 題
+    // 預設基礎 35 題
     const defaultQuestions = [
       { id: '1', category: '日常動作', question: '刷牙', answer: '解答：刷牙' },
       { id: '2', category: '日常動作', question: '洗頭', answer: '解答：洗頭' },
@@ -301,19 +351,28 @@
       { id: '35', category: '日常動作', question: '剝香蕉', answer: '解答：剝香蕉' }
     ];
 
+    // 進階題元件庫
+    const advPeople = ['柯南', '麥可傑克森', '鳴人（火影忍者）', '馬力歐', 'Hello kitty'];
+    const advPlaces = ['教室', '操場', '浴室', '餐廳', '幼兒園', '醫院'];
+    const advActions = ['打拳擊', '吃飯', '唱歌', '拔河', '打桌球', '舉重', '跑步', '青蛙跳', '自拍'];
+
     // State
-    let questions = JSON.parse(localStorage.getItem('quiz_questions_v5')) || defaultQuestions;
+    let questions = JSON.parse(localStorage.getItem('quiz_questions_v7')) || defaultQuestions;
+    let leaderboard = JSON.parse(localStorage.getItem('quiz_leaderboard_v7')) || [];
+    
     let availablePool = [];
     let currentQuestion = null;
     let isFlipped = false;
 
-    // Game State
     let isGameActive = false;
+    let isAdvancedStage = false;
+    let currentTeam = "";
     let timerInterval = null;
-    let timeLeft = 600;
+    let timeLeft = 600; // 10 分鐘
     let passLeft = 2;
     let correctQuestions = [];
     let wrongQuestions = [];
+    let timeToReach8 = null; // 達到 8 題的時間戳記(花費秒數)
 
     // DOM Elements
     const cardInner = document.getElementById('cardInner');
@@ -327,6 +386,7 @@
     const timerText = document.getElementById('timerText');
     const correctTargetText = document.getElementById('correctTargetText');
     const passCountText = document.getElementById('passCountText');
+    const stageBadgeText = document.getElementById('stageBadgeText');
 
     const correctBtn = document.getElementById('correctBtn');
     const wrongBtn = document.getElementById('wrongBtn');
@@ -338,12 +398,29 @@
     const correctList = document.getElementById('correctList');
     const wrongList = document.getElementById('wrongList');
 
-    // Victory Modal
+    const teamDisplayBadge = document.getElementById('teamDisplayBadge');
+    const currentTeamName = document.getElementById('currentTeamName');
+
+    // Modals
+    const teamNameModal = document.getElementById('teamNameModal');
+    const teamNameInput = document.getElementById('teamNameInput');
+    const confirmStartBtn = document.getElementById('confirmStartBtn');
+    const cancelStartBtn = document.getElementById('cancelStartBtn');
+
+    const advancedModal = document.getElementById('advancedModal');
+    const startAdvancedBtn = document.getElementById('startAdvancedBtn');
+
     const victoryModal = document.getElementById('victoryModal');
+    const victoryTitle = document.getElementById('victoryTitle');
     const victoryDetail = document.getElementById('victoryDetail');
     const closeVictoryBtn = document.getElementById('closeVictoryBtn');
 
-    // Manage Modal
+    const leaderboardModal = document.getElementById('leaderboardModal');
+    const openLeaderboardBtn = document.getElementById('openLeaderboardBtn');
+    const closeLeaderboardBtn = document.getElementById('closeLeaderboardBtn');
+    const leaderboardList = document.getElementById('leaderboardList');
+    const clearLeaderboardBtn = document.getElementById('clearLeaderboardBtn');
+
     const manageModal = document.getElementById('manageModal');
     const openManageBtn = document.getElementById('openManageBtn');
     const closeManageBtn = document.getElementById('closeManageBtn');
@@ -355,9 +432,14 @@
     }
 
     function saveQuestions() {
-      localStorage.setItem('quiz_questions_v5', JSON.stringify(questions));
+      localStorage.setItem('quiz_questions_v7', JSON.stringify(questions));
     }
 
+    function saveLeaderboard() {
+      localStorage.setItem('quiz_leaderboard_v7', JSON.stringify(leaderboard));
+    }
+
+    // 啟動計時器
     function startTimer() {
       timeLeft = 600;
       updateTimerDisplay();
@@ -366,7 +448,7 @@
         updateTimerDisplay();
         if (timeLeft <= 0) {
           clearInterval(timerInterval);
-          alert('⏰ 10 分鐘冒險時間到！');
+          alert('⏰ 10 分鐘冒險時間到！遊戲結束！');
           endGame();
         }
       }, 1000);
@@ -378,17 +460,45 @@
       timerText.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
-    function startGame() {
+    // 點擊「開始冒險」彈出隊伍名稱輸入框
+    startGameBtn.addEventListener('click', () => {
       if (questions.length === 0) {
         alert('寶箱裡沒有題目！請先新增。');
         return;
       }
+      teamNameInput.value = "";
+      teamNameModal.classList.remove('hidden');
+      teamNameInput.focus();
+    });
 
+    cancelStartBtn.addEventListener('click', () => {
+      teamNameModal.classList.add('hidden');
+    });
+
+    confirmStartBtn.addEventListener('click', () => {
+      const name = teamNameInput.value.trim();
+      if (!name) {
+        alert('請輸入隊伍名稱喔！');
+        return;
+      }
+      currentTeam = name;
+      currentTeamName.textContent = currentTeam;
+      teamDisplayBadge.classList.remove('hidden');
+      teamNameModal.classList.add('hidden');
+
+      startGame();
+    });
+
+    function startGame() {
       isGameActive = true;
+      isAdvancedStage = false;
+      timeToReach8 = null;
       availablePool = [...questions];
       correctQuestions = [];
       wrongQuestions = [];
       passLeft = 2;
+
+      stageBadgeText.textContent = "集齊 8 塊故事碎片過關 ✨";
 
       startGameBtn.classList.add('hidden');
       endGameBtn.classList.remove('hidden');
@@ -400,6 +510,42 @@
       updateStatsUI();
       startTimer();
       drawNextQuestion();
+    }
+
+    function generateAdvancedQuestion() {
+      const p = advPeople[Math.floor(Math.random() * advPeople.length)];
+      const pl = advPlaces[Math.floor(Math.random() * advPlaces.length)];
+      const a = advActions[Math.floor(Math.random() * advActions.length)];
+
+      const qText = `${p} 在 ${pl} ${a}`;
+      return {
+        id: 'adv_' + Date.now(),
+        category: '🔮 魔女進階題',
+        question: qText,
+        answer: `解答：${qText}`
+      };
+    }
+
+    function drawNextQuestion() {
+      if (isFlipped) flipCard(false);
+
+      if (!isAdvancedStage) {
+        if (availablePool.length === 0) {
+          alert('基礎題目已全數抽取完畢！');
+          endGame();
+          return;
+        }
+        const randomIndex = Math.floor(Math.random() * availablePool.length);
+        currentQuestion = availablePool[randomIndex];
+        availablePool.splice(randomIndex, 1);
+      } else {
+        // 進階題階段：動態生成組合題目
+        currentQuestion = generateAdvancedQuestion();
+      }
+
+      cardCategory.textContent = `✨ ${currentQuestion.category}`;
+      cardQuestion.textContent = currentQuestion.question;
+      cardAnswer.textContent = currentQuestion.answer;
     }
 
     function endGame() {
@@ -415,33 +561,58 @@
 
       if (isFlipped) flipCard(false);
 
+      // 紀錄至積分榜
+      const totalTimeSpent = 600 - timeLeft; // 總花費秒數
+      const recordTimeToReach8 = timeToReach8 !== null ? timeToReach8 : (correctQuestions.length >= 8 ? totalTimeSpent : null);
+
+      leaderboard.push({
+        team: currentTeam,
+        correctCount: correctQuestions.length,
+        reached8: correctQuestions.length >= 8,
+        timeToReach8: recordTimeToReach8, // 達成8題的花費時間
+        totalTimeSpent: totalTimeSpent,   // 總遊玩時間
+        date: new Date().toLocaleDateString()
+      });
+
+      saveLeaderboard();
+
+      // 顯示結算
+      playSound('victory');
+      confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+
+      victoryTitle.textContent = `🎉 隊伍【${currentTeam}】冒險結束！`;
       if (correctQuestions.length >= 8) {
-        playSound('victory');
-        confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
-        victoryDetail.textContent = `賞金獵人隊伍在剩餘時間 ${timerText.textContent} 內，成功集齊了 ${correctQuestions.length} 塊故事碎片！`;
-        victoryModal.classList.remove('hidden');
+        const min = Math.floor(recordTimeToReach8 / 60);
+        const sec = recordTimeToReach8 % 60;
+        victoryDetail.innerHTML = `
+          ✨ <strong>成功過關！</strong><br>
+          🏆 完成 8 題耗時：<strong>${min} 分 ${sec} 秒</strong><br>
+          答對題數：${correctQuestions.length} 題 / 答錯：${wrongQuestions.length} 題
+        `;
       } else {
-        alert(`冒險結束！本次共集齊 ${correctQuestions.length} 塊碎片，答錯 ${wrongQuestions.length} 題。`);
-      }
-    }
-
-    function drawNextQuestion() {
-      if (isFlipped) flipCard(false);
-
-      if (availablePool.length === 0) {
-        alert('題目已全數抽取完畢！');
-        endGame();
-        return;
+        victoryDetail.innerHTML = `
+          💪 冒險成果：答對 ${correctQuestions.length} 題 / 答錯 ${wrongQuestions.length} 題<br>
+          <span class="text-xs text-rose-300">未能在 10 分鐘內集齊 8 塊故事碎片，下次再接再厲！</span>
+        `;
       }
 
-      const randomIndex = Math.floor(Math.random() * availablePool.length);
-      currentQuestion = availablePool[randomIndex];
-      availablePool.splice(randomIndex, 1);
-
-      cardCategory.textContent = `✨ ${currentQuestion.category}`;
-      cardQuestion.textContent = currentQuestion.question;
-      cardAnswer.textContent = currentQuestion.answer;
+      victoryModal.classList.remove('hidden');
     }
+
+    function triggerAdvancedStage() {
+      timeToReach8 = 600 - timeLeft; // 紀錄達到 8 題的時間
+      isAdvancedStage = true;
+      passLeft += 1; // 增加 1 次 PASS 機會
+      updateStatsUI();
+
+      stageBadgeText.textContent = "🧙‍♀️ 魔女進階題挑戰中 🔥";
+      advancedModal.classList.remove('hidden');
+    }
+
+    startAdvancedBtn.addEventListener('click', () => {
+      advancedModal.classList.add('hidden');
+      drawNextQuestion();
+    });
 
     function flipCard(state) {
       isFlipped = state !== undefined ? state : !isFlipped;
@@ -456,12 +627,10 @@
       correctCount.textContent = correctQuestions.length;
       wrongCount.textContent = wrongQuestions.length;
       correctTargetText.textContent = `${correctQuestions.length} / 8 題`;
-      passCountText.textContent = `${passLeft} / 2`;
+      passCountText.textContent = `${passLeft} 次`;
       passBtnNum.textContent = passLeft;
 
-      if (passLeft <= 0) {
-        passBtn.disabled = true;
-      }
+      passBtn.disabled = !isGameActive || passLeft <= 0;
 
       if (correctQuestions.length === 0) {
         correctList.innerHTML = '<li class="text-purple-300/60 italic">尚未獲得碎片</li>';
@@ -476,15 +645,16 @@
       }
     }
 
-    // Handlers
+    // Action Handlers
     correctBtn.addEventListener('click', () => {
       if (!isGameActive || !currentQuestion) return;
       playSound('correct');
       correctQuestions.push(currentQuestion);
       updateStatsUI();
 
-      if (correctQuestions.length >= 8) {
-        endGame();
+      // 達成 8 題且尚未進入進階題
+      if (correctQuestions.length === 8 && !isAdvancedStage) {
+        triggerAdvancedStage();
       } else {
         drawNextQuestion();
       }
@@ -506,13 +676,97 @@
       drawNextQuestion();
     });
 
-    startGameBtn.addEventListener('click', startGame);
     endGameBtn.addEventListener('click', endGame);
-
     cardContainer.addEventListener('click', () => flipCard());
 
-    closeVictoryBtn.addEventListener('click', () => victoryModal.classList.add('hidden'));
+    closeVictoryBtn.addEventListener('click', () => {
+      victoryModal.classList.add('hidden');
+      renderLeaderboard();
+      leaderboardModal.classList.remove('hidden');
+    });
 
+    // Leaderboard Logic
+    openLeaderboardBtn.addEventListener('click', () => {
+      renderLeaderboard();
+      leaderboardModal.classList.remove('hidden');
+    });
+    closeLeaderboardBtn.addEventListener('click', () => leaderboardModal.classList.add('hidden'));
+
+    function renderLeaderboard() {
+      if (leaderboard.length === 0) {
+        leaderboardList.innerHTML = '<p class="text-center text-purple-300 py-8 text-sm">尚無挑戰紀錄，快來成為第一組冒險者吧！</p>';
+        return;
+      }
+
+      // 排序：成功完成8題者在前，且 timeToReach8 越短者越前面；未完成8題者依答對數排序
+      const sorted = [...leaderboard].sort((a, b) => {
+        if (a.reached8 && !b.reached8) return -1;
+        if (!a.reached8 && b.reached8) return 1;
+
+        if (a.reached8 && b.reached8) {
+          return a.timeToReach8 - b.timeToReach8; // 時間越短越好
+        }
+        return b.correctCount - a.correctCount; // 答對題數越高越好
+      });
+
+      let currentRank = 1;
+      let html = '';
+
+      sorted.forEach((item, index) => {
+        // 計算同名次邏輯
+        if (index > 0) {
+          const prev = sorted[index - 1];
+          if (item.reached8 && prev.reached8) {
+            if (item.timeToReach8 !== prev.timeToReach8) {
+              currentRank = index + 1;
+            }
+          } else {
+            if (item.correctCount !== prev.correctCount) {
+              currentRank = index + 1;
+            }
+          }
+        }
+
+        const min = item.timeToReach8 ? Math.floor(item.timeToReach8 / 60) : 0;
+        const sec = item.timeToReach8 ? (item.timeToReach8 % 60) : 0;
+        const timeFormatted = item.reached8 ? `${min}分${sec}秒` : '未完成';
+
+        let badgeStyle = 'bg-slate-800 text-slate-300';
+        if (currentRank === 1) badgeStyle = 'bg-amber-400 text-purple-950 font-black';
+        else if (currentRank === 2) badgeStyle = 'bg-slate-300 text-slate-900 font-bold';
+        else if (currentRank === 3) badgeStyle = 'bg-amber-700 text-amber-100 font-bold';
+
+        html += `
+          <div class="flex items-center justify-between p-3 bg-indigo-900/50 rounded-2xl border border-purple-400/20 text-sm">
+            <div class="flex items-center gap-3">
+              <span class="w-8 h-8 rounded-full flex items-center justify-center text-xs ${badgeStyle}">
+                ${currentRank}
+              </span>
+              <div>
+                <div class="font-bold text-amber-200 text-base">${item.team}</div>
+                <div class="text-xs text-purple-300">總答對：${item.correctCount} 題</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="font-mono text-amber-300 font-bold text-sm">${timeFormatted}</div>
+              <div class="text-[10px] text-purple-300/60">${item.date}</div>
+            </div>
+          </div>
+        `;
+      });
+
+      leaderboardList.innerHTML = html;
+    }
+
+    clearLeaderboardBtn.addEventListener('click', () => {
+      if (confirm('確定要清空所有積分榜紀錄嗎？')) {
+        leaderboard = [];
+        saveLeaderboard();
+        renderLeaderboard();
+      }
+    });
+
+    // Manage Modal Logic
     openManageBtn.addEventListener('click', () => manageModal.classList.remove('hidden'));
     closeManageBtn.addEventListener('click', () => manageModal.classList.add('hidden'));
 
