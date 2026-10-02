@@ -162,7 +162,7 @@
 
   </main>
 
-  <!-- Team Name Input Modal (隊伍名稱輸入彈窗) -->
+  <!-- Team Name Input Modal -->
   <div id="teamNameModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex justify-center items-center p-4 z-50">
     <div class="bg-indigo-950 border-4 border-amber-300 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl relative">
       <div class="text-5xl mb-3">🚩 🏴‍☠️</div>
@@ -176,10 +176,9 @@
     </div>
   </div>
 
-  <!-- Advanced Stage Modal (進入進階題魔女彈窗) -->
+  <!-- Advanced Stage Modal -->
   <div id="advancedModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex justify-center items-center p-4 z-50">
     <div class="bg-indigo-950 border-4 border-purple-400 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl relative float-anim">
-      <!-- 魔女圖示與頭像 -->
       <div class="relative w-24 h-24 mx-auto mb-3">
         <div class="w-24 h-24 rounded-full bg-purple-800 border-2 border-amber-300 flex items-center justify-center text-5xl shadow-inner">
           🧙‍♀️
@@ -200,7 +199,7 @@
     </div>
   </div>
 
-  <!-- Game Over / Victory Modal (遊戲結束結算彈窗) -->
+  <!-- Game Over / Victory Modal -->
   <div id="victoryModal" class="fixed inset-0 bg-black/80 backdrop-blur-md hidden flex justify-center items-center p-4 z-50">
     <div class="bg-indigo-950 border-4 border-amber-300 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl relative">
       <div class="text-6xl mb-2">🧙‍♀️ 🐧 🏆</div>
@@ -214,7 +213,7 @@
     </div>
   </div>
 
-  <!-- Leaderboard Modal (積分榜彈窗) -->
+  <!-- Leaderboard Modal -->
   <div id="leaderboardModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex justify-center items-center p-4 z-50">
     <div class="bg-indigo-950 border-2 border-amber-300 rounded-3xl max-w-xl w-full p-6 max-h-[85vh] flex flex-col shadow-2xl">
       <div class="flex justify-between items-center mb-4 border-b border-purple-400/30 pb-3">
@@ -223,7 +222,7 @@
         </h3>
         <button id="closeLeaderboardBtn" class="text-purple-300 hover:text-white text-2xl">&times;</button>
       </div>
-      <p class="text-xs text-purple-200 mb-3">排序規則：成功集齊 8 題者優先，耗時越短排名越高（時間相同則並列）</p>
+      <p class="text-xs text-purple-200 mb-3">排序規則：答對題數越多者排名越高（題數相同時，依據達成 8 題時間越短者優先）</p>
       <div class="flex-1 overflow-y-auto space-y-2 pr-1" id="leaderboardList"></div>
       <div class="mt-4 pt-3 border-t border-purple-400/30 text-right">
         <button id="clearLeaderboardBtn" class="text-xs text-rose-400 hover:underline">🗑️ 清除積分紀錄</button>
@@ -231,7 +230,7 @@
     </div>
   </div>
 
-  <!-- Manage Modal (題庫管理) -->
+  <!-- Manage Modal -->
   <div id="manageModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex justify-center items-center p-4 z-50">
     <div class="bg-indigo-950 border-2 border-purple-400 rounded-3xl max-w-2xl w-full p-6 max-h-[90vh] flex flex-col shadow-2xl">
       <div class="flex justify-between items-center mb-4 border-b border-purple-400/30 pb-3">
@@ -312,7 +311,6 @@
       }
     }
 
-    // 預設基礎 35 題
     const defaultQuestions = [
       { id: '1', category: '日常動作', question: '刷牙', answer: '解答：刷牙' },
       { id: '2', category: '日常動作', question: '洗頭', answer: '解答：洗頭' },
@@ -351,7 +349,6 @@
       { id: '35', category: '日常動作', question: '剝香蕉', answer: '解答：剝香蕉' }
     ];
 
-    // 進階題元件庫
     const advPeople = ['柯南', '麥可傑克森', '鳴人（火影忍者）', '馬力歐', 'Hello kitty'];
     const advPlaces = ['教室', '操場', '浴室', '餐廳', '幼兒園', '醫院'];
     const advActions = ['打拳擊', '吃飯', '唱歌', '拔河', '打桌球', '舉重', '跑步', '青蛙跳', '自拍'];
@@ -368,11 +365,11 @@
     let isAdvancedStage = false;
     let currentTeam = "";
     let timerInterval = null;
-    let timeLeft = 600; // 10 分鐘
+    let timeLeft = 600;
     let passLeft = 2;
     let correctQuestions = [];
     let wrongQuestions = [];
-    let timeToReach8 = null; // 達到 8 題的時間戳記(花費秒數)
+    let timeToReach8 = null;
 
     // DOM Elements
     const cardInner = document.getElementById('cardInner');
@@ -426,6 +423,7 @@
     const closeManageBtn = document.getElementById('closeManageBtn');
     const addQuestionForm = document.getElementById('addQuestionForm');
     const questionsList = document.getElementById('questionsList');
+    const resetDefaultBtn = document.getElementById('resetDefaultBtn');
 
     function init() {
       renderQuestionsList();
@@ -439,7 +437,6 @@
       localStorage.setItem('quiz_leaderboard_v7', JSON.stringify(leaderboard));
     }
 
-    // 啟動計時器
     function startTimer() {
       timeLeft = 600;
       updateTimerDisplay();
@@ -460,7 +457,6 @@
       timerText.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
-    // 點擊「開始冒險」彈出隊伍名稱輸入框
     startGameBtn.addEventListener('click', () => {
       if (questions.length === 0) {
         alert('寶箱裡沒有題目！請先新增。');
@@ -539,7 +535,6 @@
         currentQuestion = availablePool[randomIndex];
         availablePool.splice(randomIndex, 1);
       } else {
-        // 進階題階段：動態生成組合題目
         currentQuestion = generateAdvancedQuestion();
       }
 
@@ -561,22 +556,20 @@
 
       if (isFlipped) flipCard(false);
 
-      // 紀錄至積分榜
-      const totalTimeSpent = 600 - timeLeft; // 總花費秒數
+      const totalTimeSpent = 600 - timeLeft;
       const recordTimeToReach8 = timeToReach8 !== null ? timeToReach8 : (correctQuestions.length >= 8 ? totalTimeSpent : null);
 
       leaderboard.push({
         team: currentTeam,
         correctCount: correctQuestions.length,
         reached8: correctQuestions.length >= 8,
-        timeToReach8: recordTimeToReach8, // 達成8題的花費時間
-        totalTimeSpent: totalTimeSpent,   // 總遊玩時間
+        timeToReach8: recordTimeToReach8,
+        totalTimeSpent: totalTimeSpent,
         date: new Date().toLocaleDateString()
       });
 
       saveLeaderboard();
 
-      // 顯示結算
       playSound('victory');
       confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
 
@@ -586,12 +579,12 @@
         const sec = recordTimeToReach8 % 60;
         victoryDetail.innerHTML = `
           ✨ <strong>成功過關！</strong><br>
-          🏆 完成 8 題耗時：<strong>${min} 分 ${sec} 秒</strong><br>
-          答對題數：${correctQuestions.length} 題 / 答錯：${wrongQuestions.length} 題
+          🏆 答對題數：<strong>${correctQuestions.length} 題</strong><br>
+          ⏱️ 完成 8 題耗時：${min} 分 ${sec} 秒
         `;
       } else {
         victoryDetail.innerHTML = `
-          💪 冒險成果：答對 ${correctQuestions.length} 題 / 答錯 ${wrongQuestions.length} 題<br>
+          💪 冒險成果：答對 <strong>${correctQuestions.length} 題</strong> / 答錯 ${wrongQuestions.length} 題<br>
           <span class="text-xs text-rose-300">未能在 10 分鐘內集齊 8 塊故事碎片，下次再接再厲！</span>
         `;
       }
@@ -600,9 +593,9 @@
     }
 
     function triggerAdvancedStage() {
-      timeToReach8 = 600 - timeLeft; // 紀錄達到 8 題的時間
+      timeToReach8 = 600 - timeLeft;
       isAdvancedStage = true;
-      passLeft += 1; // 增加 1 次 PASS 機會
+      passLeft += 1;
       updateStatsUI();
 
       stageBadgeText.textContent = "🧙‍♀️ 魔女進階題挑戰中 🔥";
@@ -645,14 +638,12 @@
       }
     }
 
-    // Action Handlers
     correctBtn.addEventListener('click', () => {
       if (!isGameActive || !currentQuestion) return;
       playSound('correct');
       correctQuestions.push(currentQuestion);
       updateStatsUI();
 
-      // 達成 8 題且尚未進入進階題
       if (correctQuestions.length === 8 && !isAdvancedStage) {
         triggerAdvancedStage();
       } else {
@@ -685,7 +676,6 @@
       leaderboardModal.classList.remove('hidden');
     });
 
-    // Leaderboard Logic
     openLeaderboardBtn.addEventListener('click', () => {
       renderLeaderboard();
       leaderboardModal.classList.remove('hidden');
@@ -698,64 +688,42 @@
         return;
       }
 
-      // 排序：成功完成8題者在前，且 timeToReach8 越短者越前面；未完成8題者依答對數排序
+      // 🏆 答對越多題排名越高；若題數相同，則完成時間越短排名越高
       const sorted = [...leaderboard].sort((a, b) => {
-        if (a.reached8 && !b.reached8) return -1;
-        if (!a.reached8 && b.reached8) return 1;
-
-        if (a.reached8 && b.reached8) {
-          return a.timeToReach8 - b.timeToReach8; // 時間越短越好
+        if (b.correctCount !== a.correctCount) {
+          return b.correctCount - a.correctCount;
         }
-        return b.correctCount - a.correctCount; // 答對題數越高越好
+        if (a.reached8 && b.reached8 && a.timeToReach8 !== null && b.timeToReach8 !== null) {
+          return a.timeToReach8 - b.timeToReach8;
+        }
+        return 0;
       });
 
-      let currentRank = 1;
-      let html = '';
-
-      sorted.forEach((item, index) => {
-        // 計算同名次邏輯
-        if (index > 0) {
-          const prev = sorted[index - 1];
-          if (item.reached8 && prev.reached8) {
-            if (item.timeToReach8 !== prev.timeToReach8) {
-              currentRank = index + 1;
-            }
-          } else {
-            if (item.correctCount !== prev.correctCount) {
-              currentRank = index + 1;
-            }
-          }
+      leaderboardList.innerHTML = sorted.map((item, index) => {
+        const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+        let timeStr = '--';
+        if (item.reached8 && item.timeToReach8 !== null) {
+          const m = Math.floor(item.timeToReach8 / 60);
+          const s = item.timeToReach8 % 60;
+          timeStr = `${m}分${s}秒`;
         }
 
-        const min = item.timeToReach8 ? Math.floor(item.timeToReach8 / 60) : 0;
-        const sec = item.timeToReach8 ? (item.timeToReach8 % 60) : 0;
-        const timeFormatted = item.reached8 ? `${min}分${sec}秒` : '未完成';
-
-        let badgeStyle = 'bg-slate-800 text-slate-300';
-        if (currentRank === 1) badgeStyle = 'bg-amber-400 text-purple-950 font-black';
-        else if (currentRank === 2) badgeStyle = 'bg-slate-300 text-slate-900 font-bold';
-        else if (currentRank === 3) badgeStyle = 'bg-amber-700 text-amber-100 font-bold';
-
-        html += `
-          <div class="flex items-center justify-between p-3 bg-indigo-900/50 rounded-2xl border border-purple-400/20 text-sm">
+        return `
+          <div class="flex justify-between items-center bg-purple-900/40 border border-purple-400/20 p-3 rounded-2xl">
             <div class="flex items-center gap-3">
-              <span class="w-8 h-8 rounded-full flex items-center justify-center text-xs ${badgeStyle}">
-                ${currentRank}
-              </span>
+              <span class="text-lg font-black w-8 text-center text-amber-300">${medal}</span>
               <div>
-                <div class="font-bold text-amber-200 text-base">${item.team}</div>
-                <div class="text-xs text-purple-300">總答對：${item.correctCount} 題</div>
+                <div class="font-bold text-amber-200">${item.team}</div>
+                <div class="text-xs text-purple-300/80">${item.date}</div>
               </div>
             </div>
             <div class="text-right">
-              <div class="font-mono text-amber-300 font-bold text-sm">${timeFormatted}</div>
-              <div class="text-[10px] text-purple-300/60">${item.date}</div>
+              <div class="text-sm font-black text-amber-300">${item.correctCount} 題</div>
+              <div class="text-xs text-purple-200">${item.reached8 ? `⏱️ 過關耗時: ${timeStr}` : '未達到 8 題'}</div>
             </div>
           </div>
         `;
-      });
-
-      leaderboardList.innerHTML = html;
+      }).join('');
     }
 
     clearLeaderboardBtn.addEventListener('click', () => {
@@ -766,46 +734,58 @@
       }
     });
 
-    // Manage Modal Logic
-    openManageBtn.addEventListener('click', () => manageModal.classList.remove('hidden'));
+    openManageBtn.addEventListener('click', () => {
+      renderQuestionsList();
+      manageModal.classList.remove('hidden');
+    });
     closeManageBtn.addEventListener('click', () => manageModal.classList.add('hidden'));
 
+    addQuestionForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const cat = document.getElementById('newCategory').value.trim();
+      const q = document.getElementById('newQuestion').value.trim();
+      const a = document.getElementById('newAnswer').value.trim();
+
+      if (cat && q && a) {
+        questions.push({
+          id: Date.now().toString(),
+          category: cat,
+          question: q,
+          answer: a.startsWith('解答：') ? a : `解答：${a}`
+        });
+        saveQuestions();
+        renderQuestionsList();
+        addQuestionForm.reset();
+      }
+    });
+
+    function deleteQuestion(id) {
+      questions = questions.filter(item => item.id !== id);
+      saveQuestions();
+      renderQuestionsList();
+    }
+
     function renderQuestionsList() {
-      questionsList.innerHTML = questions.map((q) => `
-        <div class="flex items-center justify-between p-2.5 bg-indigo-900/40 rounded-xl border border-purple-400/20 text-sm">
-          <div class="overflow-hidden pr-2">
-            <span class="text-xs bg-purple-800 text-amber-200 px-2 py-0.5 rounded-md mr-2 font-bold">${q.category}</span>
-            <span class="font-medium truncate inline-block max-w-[200px] sm:max-w-[320px] align-bottom text-slate-200">${q.question}</span>
+      if (questions.length === 0) {
+        questionsList.innerHTML = '<p class="text-center text-purple-300/60 py-4 text-xs">寶箱空空如也，請新增題目！</p>';
+        return;
+      }
+      questionsList.innerHTML = questions.map(q => `
+        <div class="flex justify-between items-center bg-slate-900/60 border border-purple-400/20 p-2.5 rounded-xl text-xs">
+          <div class="space-y-0.5">
+            <span class="bg-purple-800 text-amber-200 px-2 py-0.5 rounded-full font-bold text-[10px]">${q.category}</span>
+            <span class="font-bold text-slate-100 ml-1">${q.question}</span>
+            <div class="text-purple-300/80 text-[11px]">${q.answer}</div>
           </div>
-          <button onclick="deleteQuestion('${q.id}')" class="text-rose-400 hover:text-rose-300 p-1">
+          <button onclick="deleteQuestion('${q.id}')" class="text-rose-400 hover:text-rose-300 p-1.5 transition">
             <i class="fa-solid fa-trash"></i>
           </button>
         </div>
       `).join('');
     }
 
-    window.deleteQuestion = function(id) {
-      questions = questions.filter(q => q.id !== id);
-      saveQuestions();
-      renderQuestionsList();
-    };
-
-    addQuestionForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const newQ = {
-        id: Date.now().toString(),
-        category: document.getElementById('newCategory').value.trim(),
-        question: document.getElementById('newQuestion').value.trim(),
-        answer: document.getElementById('newAnswer').value.trim()
-      };
-      questions.unshift(newQ);
-      saveQuestions();
-      renderQuestionsList();
-      addQuestionForm.reset();
-    });
-
-    document.getElementById('resetDefaultBtn').addEventListener('click', () => {
-      if (confirm('確定要恢復為 35 道預設題目嗎？')) {
+    resetDefaultBtn.addEventListener('click', () => {
+      if (confirm('確定要重置並恢復預設 35 道題目嗎？自訂題目將被覆蓋。')) {
         questions = [...defaultQuestions];
         saveQuestions();
         renderQuestionsList();
