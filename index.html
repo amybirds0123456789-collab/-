@@ -93,7 +93,7 @@
             <span class="flex items-center gap-1"><i class="fa-solid fa-hand-pointer"></i> 點擊卡片看解答 📖</span>
           </div>
           <div class="my-auto px-2">
-            <h2 id="cardQuestion" class="text-4xl md:text-5xl lg:text-6xl font-black leading-tight text-amber-200 tracking-wider">點擊「開始冒險」開啟關卡！</h2>
+            <h2 id="cardQuestion" class="text-3xl md:text-5xl lg:text-5xl font-black leading-relaxed tracking-wider">點擊「開始冒險」開啟關卡！</h2>
           </div>
           <div class="text-xs text-purple-300/80 flex items-center gap-1 font-bold">
             🐧 企鵝賞金獵人準備中 🪙
@@ -104,7 +104,7 @@
         <div class="absolute inset-0 backface-hidden rotate-y-180 bg-purple-950/95 border-4 border-purple-400 rounded-3xl p-6 flex flex-col justify-between items-center text-center">
           <div class="w-full text-right text-xs text-amber-300 font-bold">📜 解答封印解除</div>
           <div class="my-auto px-2 overflow-y-auto max-h-56">
-            <p id="cardAnswer" class="text-3xl md:text-4xl text-amber-100 leading-relaxed font-bold">解答會顯示在這裡。</p>
+            <p id="cardAnswer" class="text-2xl md:text-4xl text-amber-100 leading-relaxed font-bold">解答會顯示在這裡。</p>
           </div>
           <div class="text-xs text-purple-300">點擊卡片返回題目</div>
         </div>
@@ -181,7 +181,7 @@
     <div class="bg-indigo-950 border-4 border-purple-400 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl relative float-anim">
       <div class="relative w-24 h-24 mx-auto mb-3">
         <div class="w-24 h-24 rounded-full bg-purple-800 border-2 border-amber-300 flex items-center justify-center text-5xl shadow-inner">
-          🧙‍♀
+          🧙‍♀️
         </div>
         <span class="absolute -bottom-1 -right-1 text-2xl">✨</span>
       </div>
@@ -192,7 +192,7 @@
       <div class="bg-purple-900/60 p-3 rounded-2xl border border-purple-400/30 text-xs text-purple-200 mb-5 space-y-1">
         <p>✨ 恭喜完成前 8 題故事碎片收集！</p>
         <p>🎁 魔女為你們額外增加了 <strong>2 次 PASS 機會</strong>！</p>
-        <p>⏱️ 時間將繼續倒數，歡迎挑戰無限魔女題目！</p>
+        <p>⏱️ 時間將繼續倒數，歡迎挑戰不重複的魔女題型！</p>
       </div>
       <button id="startAdvancedBtn" class="bg-purple-500 hover:bg-purple-400 text-white font-black px-6 py-3 rounded-2xl shadow-lg transition transform hover:scale-105">
         接受魔女挑戰！🔮
@@ -350,9 +350,15 @@
       { id: '35', category: '日常動作', question: '剝香蕉', answer: '解答：剝香蕉' }
     ];
 
-    const advPeople = ['柯南', '麥可傑克森', '鳴人（火影忍者）', '馬力歐', 'Hello kitty'];
-    const advPlaces = ['教室', '操場', '浴室', '餐廳', '幼兒園', '醫院'];
-    const advActions = ['打拳擊', '吃飯', '唱歌', '拔河', '打桌球', '舉重', '跑步', '青蛙跳', '自拍'];
+    // 擴充進階題元件庫
+    const advPeopleMaster = ['柯南', '麥可傑克森', '鳴人（火影忍者）', '馬力歐', 'Hello Kitty', '哆啦A夢', '皮卡丘', '蜘蛛人', '櫻桃小丸子', '孫悟空', '史奴比', 'Elsa'];
+    const advPlacesMaster = ['教室', '操場', '浴室', '餐廳', '幼兒園', '醫院', '動物園', '遊樂園', '太空站', '電影院', '海邊', '便利商店'];
+    const advActionsMaster = ['打拳擊', '吃飯', '唱歌', '拔河', '打桌球', '舉重', '跑步', '青蛙跳', '自拍', '跳芭蕾舞', '打彈珠', '騎腳踏車', '吹泡泡', '溜滑梯', '打羽毛球'];
+
+    // 獨立動態抽牌池（防止重複）
+    let advPeoplePool = [];
+    let advPlacesPool = [];
+    let advActionsPool = [];
 
     // State
     let questions = JSON.parse(localStorage.getItem('quiz_questions_v7')) || defaultQuestions;
@@ -367,7 +373,7 @@
     let currentTeam = "";
     let timerInterval = null;
     let timeLeft = 600;
-    let passCount = 3; // 設定 PASS 次數限制為 3 次
+    let passCount = 3;
     let correctQuestions = [];
     let wrongQuestions = [];
     let timeToReach8 = null;
@@ -489,9 +495,15 @@
     function startGame() {
       isGameActive = true;
       isAdvancedStage = false;
-      passCount = 3; // 重置 PASS 次數為 3 次
+      passCount = 3;
       timeToReach8 = null;
       availablePool = [...questions];
+      
+      // 重置進階題抽牌池
+      advPeoplePool = [...advPeopleMaster];
+      advPlacesPool = [...advPlacesMaster];
+      advActionsPool = [...advActionsMaster];
+
       correctQuestions = [];
       wrongQuestions = [];
 
@@ -509,17 +521,30 @@
       drawNextQuestion();
     }
 
+    // 不重複進階題目生成器
     function generateAdvancedQuestion() {
-      const p = advPeople[Math.floor(Math.random() * advPeople.length)];
-      const pl = advPlaces[Math.floor(Math.random() * advPlaces.length)];
-      const a = advActions[Math.floor(Math.random() * advActions.length)];
+      if (advPeoplePool.length === 0) advPeoplePool = [...advPeopleMaster];
+      if (advPlacesPool.length === 0) advPlacesPool = [...advPlacesMaster];
+      if (advActionsPool.length === 0) advActionsPool = [...advActionsMaster];
 
-      const qText = `${p} 在 ${pl} ${a}`;
+      const pIdx = Math.floor(Math.random() * advPeoplePool.length);
+      const plIdx = Math.floor(Math.random() * advPlacesPool.length);
+      const aIdx = Math.floor(Math.random() * advActionsPool.length);
+
+      const p = advPeoplePool.splice(pIdx, 1)[0];
+      const pl = advPlacesPool.splice(plIdx, 1)[0];
+      const a = advActionsPool.splice(aIdx, 1)[0];
+
+      // 彩色單行呈現
+      const coloredHTML = `<span class="text-sky-400 font-extrabold">${p}</span> 在 <span class="text-emerald-400 font-extrabold">${pl}</span> <span class="text-rose-400 font-extrabold">${a}</span>`;
+      const plainText = `${p} 在 ${pl} ${a}`;
+
       return {
         id: 'adv_' + Date.now(),
         category: '🔮 魔女進階題',
-        question: qText,
-        answer: `解答：${qText}`
+        questionHTML: coloredHTML,
+        question: plainText,
+        answer: `解答：${plainText}`
       };
     }
 
@@ -535,12 +560,13 @@
         const randomIndex = Math.floor(Math.random() * availablePool.length);
         currentQuestion = availablePool[randomIndex];
         availablePool.splice(randomIndex, 1);
+        cardQuestion.textContent = currentQuestion.question;
       } else {
         currentQuestion = generateAdvancedQuestion();
+        cardQuestion.innerHTML = currentQuestion.questionHTML;
       }
 
       cardCategory.textContent = `✨ ${currentQuestion.category}`;
-      cardQuestion.textContent = currentQuestion.question;
       cardAnswer.textContent = currentQuestion.answer;
     }
 
@@ -596,7 +622,7 @@
     function triggerAdvancedStage() {
       timeToReach8 = 600 - timeLeft;
       isAdvancedStage = true;
-      passCount += 2; // 過關額外獎勵 2 次 PASS
+      passCount += 2;
       updateStatsUI();
 
       stageBadgeText.textContent = "🧙‍♀️ 魔女進階題挑戰中 🔥";
