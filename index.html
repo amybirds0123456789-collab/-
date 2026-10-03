@@ -53,7 +53,7 @@
     </div>
 
     <!-- Game Control Bar -->
-    <div class="w-full bg-indigo-900/70 backdrop-blur-md border-2 border-purple-300/40 p-4 rounded-3xl shadow-xl mb-4 flex flex-wrap gap-4 items-center justify-between">
+    <div class="w-full bg-indigo-900/70 backdrop-blur-md border-2 border-purple-400/30 p-4 rounded-3xl shadow-xl mb-4 flex flex-wrap gap-4 items-center justify-between">
       <!-- Timer -->
       <div class="flex items-center gap-2 bg-indigo-950/60 px-4 py-2 rounded-2xl border border-purple-400/30">
         <span class="text-xl">⏳</span>
@@ -67,7 +67,7 @@
           🏆 集齊碎片: <span id="correctTargetText" class="text-amber-300 font-extrabold text-base">0 / 8 題</span>
         </div>
         <div class="bg-indigo-950/60 px-3 py-1.5 rounded-xl border border-purple-400/20">
-          ⏭️ PASS 次數: <span id="passCountText" class="text-amber-400 font-extrabold text-base">2 / 2</span>
+          ⏭️ PASS 剩餘: <span id="passCountText" class="text-amber-400 font-extrabold text-base">3 次</span>
         </div>
       </div>
 
@@ -121,7 +121,7 @@
         ❌ 答錯了
       </button>
       <button id="passBtn" disabled class="disabled:opacity-40 bg-amber-400 hover:bg-amber-300 text-purple-950 font-black py-3.5 px-6 rounded-2xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 text-lg">
-        ⏭️ PASS (<span id="passBtnNum">2</span>)
+        ⏭️ PASS (<span id="passBtnNum">3</span>)
       </button>
     </div>
 
@@ -181,7 +181,7 @@
     <div class="bg-indigo-950 border-4 border-purple-400 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl relative float-anim">
       <div class="relative w-24 h-24 mx-auto mb-3">
         <div class="w-24 h-24 rounded-full bg-purple-800 border-2 border-amber-300 flex items-center justify-center text-5xl shadow-inner">
-          🧙‍♀️
+          🧙‍♀
         </div>
         <span class="absolute -bottom-1 -right-1 text-2xl">✨</span>
       </div>
@@ -191,7 +191,8 @@
       </h2>
       <div class="bg-purple-900/60 p-3 rounded-2xl border border-purple-400/30 text-xs text-purple-200 mb-5 space-y-1">
         <p>✨ 恭喜完成前 8 題故事碎片收集！</p>
-        <p>⏱️ 時間將繼續倒數，獲得額外 <strong>1 次 PASS 機會</strong>！</p>
+        <p>🎁 魔女為你們額外增加了 <strong>2 次 PASS 機會</strong>！</p>
+        <p>⏱️ 時間將繼續倒數，歡迎挑戰無限魔女題目！</p>
       </div>
       <button id="startAdvancedBtn" class="bg-purple-500 hover:bg-purple-400 text-white font-black px-6 py-3 rounded-2xl shadow-lg transition transform hover:scale-105">
         接受魔女挑戰！🔮
@@ -366,7 +367,7 @@
     let currentTeam = "";
     let timerInterval = null;
     let timeLeft = 600;
-    let passLeft = 2;
+    let passCount = 3; // 設定 PASS 次數限制為 3 次
     let correctQuestions = [];
     let wrongQuestions = [];
     let timeToReach8 = null;
@@ -488,11 +489,11 @@
     function startGame() {
       isGameActive = true;
       isAdvancedStage = false;
+      passCount = 3; // 重置 PASS 次數為 3 次
       timeToReach8 = null;
       availablePool = [...questions];
       correctQuestions = [];
       wrongQuestions = [];
-      passLeft = 2;
 
       stageBadgeText.textContent = "集齊 8 塊故事碎片過關 ✨";
 
@@ -595,7 +596,7 @@
     function triggerAdvancedStage() {
       timeToReach8 = 600 - timeLeft;
       isAdvancedStage = true;
-      passLeft += 1;
+      passCount += 2; // 過關額外獎勵 2 次 PASS
       updateStatsUI();
 
       stageBadgeText.textContent = "🧙‍♀️ 魔女進階題挑戰中 🔥";
@@ -620,10 +621,10 @@
       correctCount.textContent = correctQuestions.length;
       wrongCount.textContent = wrongQuestions.length;
       correctTargetText.textContent = `${correctQuestions.length} / 8 題`;
-      passCountText.textContent = `${passLeft} 次`;
-      passBtnNum.textContent = passLeft;
+      passCountText.textContent = `${passCount} 次`;
+      passBtnNum.textContent = passCount;
 
-      passBtn.disabled = !isGameActive || passLeft <= 0;
+      passBtn.disabled = !isGameActive || passCount <= 0;
 
       if (correctQuestions.length === 0) {
         correctList.innerHTML = '<li class="text-purple-300/60 italic">尚未獲得碎片</li>';
@@ -660,9 +661,9 @@
     });
 
     passBtn.addEventListener('click', () => {
-      if (!isGameActive || passLeft <= 0) return;
+      if (!isGameActive || passCount <= 0) return;
       playSound('pass');
-      passLeft--;
+      passCount--;
       updateStatsUI();
       drawNextQuestion();
     });
@@ -688,7 +689,6 @@
         return;
       }
 
-      // 🏆 答對越多題排名越高；若題數相同，則完成時間越短排名越高
       const sorted = [...leaderboard].sort((a, b) => {
         if (b.correctCount !== a.correctCount) {
           return b.correctCount - a.correctCount;
